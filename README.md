@@ -39,6 +39,14 @@ The frontend is ready for the team to explore and integrate. For now, accounts, 
 
 When the backend is ready, we can connect it through the existing services and hooks instead of rebuilding the pages. Real authentication, permissions, room availability, payment verification, private document storage and shared records will need to be handled by the backend.
 
+## Hotel dataset
+
+The original cleaned hotel workbook is now represented by four JSON files in `data/hotel-dataset/`. We kept the original values, converted Excel dates to readable ISO dates and included each source sheet once. The analysis workbook is a reference, not a second set of bookings.
+
+`services/hotel-dataset.ts` is the entry point for reading and summarising the records. Staff and managers can browse the imported history, and the manager dashboard calculates its figures from the records. The guest preview is linked to sample profile G0072 for previous reservations and recommendations. New bookings and live actions remain separate from the imported records.
+
+During backend integration, upload the workbook at the backend, agree on validation and reconciliation rules, and replace the dataset service with API calls. Keep the original statuses and source IDs; do not convert imported payments or bookings into verified transactions or active room allocations without validation. No real accounts or access credentials are created from this dataset.
+
 ## Checking and deploying changes
 
 ```bash
