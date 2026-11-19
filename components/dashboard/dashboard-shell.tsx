@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { StaffNavigation } from "@/components/dashboard/staff-navigation";
 import { Brand } from "@/components/layout/site-shell";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/hooks/use-auth";
@@ -25,6 +26,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     <main className="shell dashboard-page" id="dashboard-content">
       <Link href="/" className="text-link"><Icon name="back" /> Hotel homepage</Link>
       <div className="dashboard-welcome"><div><span className="eyebrow">{roleLabels[account.role]} workspace</span><h1>Welcome, {account.name.split(" ")[0]}.</h1><p>{account.email}</p></div><div className="dashboard-avatar" aria-hidden="true">{account.name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase()}</div></div>
+      {account.role === "staff" && <StaffNavigation />}
       {children}
       <p className="auth-disclaimer"><Icon name="info" />Demo workspace. Account data is stored locally in this browser and is not protected by a backend.</p>
     </main>
