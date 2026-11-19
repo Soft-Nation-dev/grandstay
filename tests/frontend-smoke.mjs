@@ -113,7 +113,7 @@ try {
   await staffCard.getByRole("button", { name: "Manage" }).click();
   await staffCard.getByLabel("Account status").selectOption("inactive");
   await staffCard.getByRole("button", { name: "Save changes" }).click();
-  await text("Inactive");
+  await staffCard.locator(".experience-status").filter({ hasText: "Inactive" }).waitFor({ state: "visible" });
   await text("Sign in to continue", staffPage);
   await staffCard.getByRole("button", { name: "Manage" }).click();
   await staffCard.getByLabel("Account status").selectOption("active");
