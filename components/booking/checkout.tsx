@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/hooks/use-auth";
+import { useManagement } from "@/hooks/use-management";
 import { useBookingStore } from "@/hooks/use-bookings";
 import { bookingQuery, readStay } from "@/lib/booking-query";
 import { formatMoney } from "@/lib/format";
@@ -31,6 +32,7 @@ export function Checkout() {
   const router = useRouter();
   const account = useAuth();
   const { bookings } = useBookingStore();
+  const { rooms } = useManagement();
   const [reference, setReference] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -40,7 +42,7 @@ export function Checkout() {
   const input = stay && roomId ? { ...stay, roomId } : null;
   let quote: ReturnType<typeof quoteBooking> | null = null;
   if (input) {
-    try { quote = quoteBooking(input, bookings); } catch {}
+    try { quote = quoteBooking(input, bookings, rooms); } catch {}
   }
   async function pay(outcome: PaymentOutcome) {
     if (!input || !reference || lock.current) return;
