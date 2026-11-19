@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "@/components/ui/hotel-image";
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "@/components/ui/icon";
