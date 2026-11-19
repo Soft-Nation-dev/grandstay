@@ -36,6 +36,25 @@ const fit = async target => {
   const dimensions = await target.evaluate(() => ({ scroll: document.documentElement.scrollWidth, viewport: innerWidth }));
   assert.ok(dimensions.scroll <= dimensions.viewport + 2, `Horizontal overflow: ${target.url()} at ${dimensions.viewport}px (${dimensions.scroll}px)`);
 };
+const scrollPosition = async target => {
+  await target.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  return target.evaluate(() => window.scrollY);
+};
+const atTop = async target => {
+  await target.waitForFunction(() => window.scrollY <= 4);
+  assert.ok(await scrollPosition(target) <= 4, `Unexpected page scroll: ${target.url()}`);
+};
+const staysInPlace = async (target, button, action) => {
+  await button.scrollIntoViewIfNeeded();
+  const before = await scrollPosition(target);
+  await action();
+  const after = await scrollPosition(target);
+  assert.ok(Math.abs(after - before) <= 12, `Unexpected scroll change: ${before} to ${after} on ${target.url()}`);
+};
+const scrollDown = async target => {
+  await target.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  assert.ok(await scrollPosition(target) > 100);
+};
 const signOut = async (target = page) => {
   await target.getByRole("button", { name: "Sign out", exact: true }).click();
   await target.waitForURL(url => url.pathname.replace(/\/$/, "").endsWith("/login"));
@@ -49,6 +68,48 @@ try {
   await page.locator("img").first().evaluate(image => image.decode());
   await go("/rooms");
   await fit(page);
+  await page.setViewportSize({ width: 375, height: 760 });
+  await go("/");
+  const mobileNav = page.getByRole("navigation", { name: "Mobile navigation" });
+  await scrollDown(page);
+  await mobileNav.getByRole("link", { name: "Home", exact: true }).click();
+  await atTop(page);
+  await scrollDown(page);
+  await mobileNav.getByRole("link", { name: "Rooms", exact: true }).click();
+  await page.getByRole("heading", { name: "Rooms & suites", level: 1 }).waitFor();
+  await atTop(page);
+  await scrollDown(page);
+  await mobileNav.getByRole("link", { name: "Rooms", exact: true }).click();
+  await atTop(page);
+  const standardFilter = page.getByRole("button", { name: "Standard", exact: true });
+  await staysInPlace(page, standardFilter, async () => {
+    await standardFilter.click();
+    await page.getByText("2 room types to explore", { exact: true }).waitFor();
+  });
+  await page.getByRole("link", { name: "View room" }).first().click();
+  await page.getByRole("heading", { name: "Standard Cozy Haven", level: 1 }).waitFor();
+  await atTop(page);
+  await page.getByLabel("Check-in", { exact: true }).fill(checkIn);
+  await page.getByLabel("Check-out", { exact: true }).fill(checkOut);
+  const availability = page.getByRole("button", { name: "Check availability" });
+  await staysInPlace(page, availability, async () => {
+    await availability.click();
+    await text("Available for your dates");
+  });
+  await mobileNav.getByRole("link", { name: "Home", exact: true }).click();
+  await page.locator(".hero").waitFor();
+  await atTop(page);
+  await mobileNav.getByRole("link", { name: "Experience", exact: true }).click();
+  await page.waitForFunction(() => {
+    const section = document.getElementById("experience");
+    return section && section.getBoundingClientRect().top >= 0 && section.getBoundingClientRect().top < innerHeight;
+  });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await go("/");
+  await scrollDown(page);
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Rooms & suites" }).click();
+  await page.getByRole("heading", { name: "Rooms & suites", level: 1 }).waitFor();
+  await atTop(page);
   await go("/staff");
   await text("Sign in to continue");
   await roleLogin("Guest");
@@ -72,9 +133,14 @@ try {
   await page.getByRole("button", { name: "Submit request" }).click();
   await text("Request received.");
   await go("/guest/concierge");
+  await text("Start a conversation with the GrandStay team.");
+  await atTop(page);
   await page.getByLabel("Message", { exact: true }).fill("When is breakfast?");
-  await page.getByRole("button", { name: "Send message" }).click();
-  await text("When is breakfast?");
+  const send = page.getByRole("button", { name: "Send message" });
+  await staysInPlace(page, send, async () => {
+    await send.click();
+    await text("When is breakfast?");
+  });
   await signOut();
   await roleLogin("Staff");
   await go("/staff/check-ins");
@@ -100,7 +166,11 @@ try {
   await signOut();
   await roleLogin("Manager");
   await go("/manager/rooms");
-  await page.getByRole("button", { name: "Edit room", exact: true }).first().click();
+  const editRoom = page.getByRole("button", { name: "Edit room", exact: true }).first();
+  await staysInPlace(page, editRoom, async () => {
+    await editRoom.click();
+    await page.locator(".management-inline-editor").getByRole("heading", { name: "Edit room type" }).waitFor();
+  });
   await page.getByLabel("Nightly price (₦)").fill("61000");
   await page.getByRole("button", { name: "Save room" }).click();
   await page.getByRole("button", { name: "Save room" }).waitFor({ state: "hidden" });
