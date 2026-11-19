@@ -24,7 +24,7 @@ export function StaySearch({ initial, roomId }: { initial?: Search; roomId?: str
   }
 
   return <form className="stay-search" onSubmit={submit}>
-    <label><span><Icon name="calendar" /> Check-in</span><input type="date" required value={checkIn} onChange={(event) => {
+    <label><span><Icon name="calendar" /> Check-in</span><input type="date" required min={localDate()} value={checkIn} onChange={(event) => {
       const value = event.target.value;
       setCheckIn(value);
       if (value && checkOut && checkOut <= value) setCheckOut(nextDate(value));
