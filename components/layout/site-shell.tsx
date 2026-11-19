@@ -6,7 +6,7 @@ import { hotel } from "@/data/mock";
 
 export function Brand() {
   return <Link className="brand" resetScroll href="/" aria-label="Guestly home">
-    <span className="brand-mark"><svg viewBox="0 0 32 32" width="27" height="27" fill="none" aria-hidden="true"><path d="M25 10a11 11 0 1 0 0 13v-7h-9" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M23.5 5.5h4v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></span>
+    <span className="brand-mark"><svg viewBox="0 0 32 32" width="27" height="27" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 26h24M6 26V14h5V7h10v7h5v12M11 12h10M11 26V14m10 12V14M14 16v1m4-1v1m-4 3v1m4-1v1M8 18v1m16-1v1M8 22v1m16-1v1M14 26v-2a2 2 0 0 1 4 0v2M14 4h4" /></svg></span>
     <span className="brand-text"><strong>{hotel.name}</strong><small>HOSPITALITY</small></span>
   </Link>;
 }
