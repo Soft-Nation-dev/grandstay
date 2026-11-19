@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { ManagerNavigation } from "@/components/dashboard/manager-navigation";
 import { StaffNavigation } from "@/components/dashboard/staff-navigation";
@@ -9,11 +9,12 @@ import { Brand } from "@/components/layout/site-shell";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/hooks/use-auth";
 import { signOut } from "@/services/auth";
-import { roleLabels } from "@/types/auth";
+import { roleLabels, roleRoutes } from "@/types/auth";
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const account = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   if (!account) return null;
   function logout() {
     signOut();
@@ -29,8 +30,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       <div className="dashboard-welcome"><div><span className="eyebrow">{roleLabels[account.role]} workspace</span><h1>Welcome, {account.name.split(" ")[0]}.</h1><p>{account.email}</p></div><div className="dashboard-avatar" aria-hidden="true">{account.name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase()}</div></div>
       {account.role === "staff" && <StaffNavigation />}
       {account.role === "manager" && <ManagerNavigation />}
+      {pathname === roleRoutes[account.role] && <aside className="panel dashboard-explanation"><span className="feature-icon"><Icon name="info" /></span><div><h2>Frontend demonstration</h2><p>Use fictional details only. Accounts, hotel records and messages are stored in this browser. Payments, identity checks and access codes are simulations; no money is charged, no actual ID is uploaded and no physical door is unlocked. Live authentication, shared data and integrations will be enabled by the backend.</p></div></aside>}
       {children}
-      <p className="auth-disclaimer"><Icon name="info" />Demo workspace. Account data is stored locally in this browser and is not protected by a backend.</p>
     </main>
   </>;
 }
