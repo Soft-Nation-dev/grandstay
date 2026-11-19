@@ -478,3 +478,11 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .demo-role small { font-size:10px; font-weight:500; color:var(--muted); overflow-wrap:anywhere; }
 @media(max-width:900px) { .admin-team-grid { grid-template-columns:1fr; } }
 @media(max-width:390px) { .admin-editor-fields { grid-template-columns:1fr; } .admin-account-main { gap:8px; } .admin-account-main>.button { padding-inline:8px; } }
+
+.dashboard-explanation { display:flex; align-items:flex-start; gap:14px; background:#f5f8f5; }
+.dashboard-explanation .feature-icon { flex:none; }
+.dashboard-explanation h2 { font-size:16px; margin:0 0 6px; }
+.dashboard-explanation p { font-size:13px; line-height:1.6; color:var(--muted); }
+
+.dashboard-page > * { min-width:0; }
+.staff-navigation { min-width:0; max-width:100%; }

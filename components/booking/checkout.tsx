@@ -15,7 +15,7 @@ import type { BookingInput, PaymentOutcome } from "@/types/booking";
 
 function BookingSummary({ input, quote }: { input: BookingInput; quote: ReturnType<typeof quoteBooking> }) {
   return <aside className="panel checkout-summary">
-    <div className="summary-photo"><Image src={quote.room.image} alt={quote.room.name} fill sizes="(max-width: 760px) 100vw, 400px" /></div>
+    <div className="summary-photo"><Image src={quote.room.image} alt={quote.room.name} fill sizes="(max-width: 760px) 100vw, 400px" unoptimized={quote.room.image.startsWith("data:")} /></div>
     <h2>{quote.room.name}</h2>
     <dl className="summary-lines">
       <div><dt>Check-in</dt><dd>{input.checkIn}</dd></div>
@@ -56,7 +56,7 @@ export function Checkout() {
         return;
       }
       setReference("");
-      setError(outcome === "failed" ? "Demo payment failed. Your room has not been booked. You can try again." : "Payment cancelled. No reservation was created.");
+      setError(outcome === "failed" ? "Payment failed. Your room has not been booked. You can try again." : "Payment cancelled. No reservation was created.");
     } catch (error) {
       setReference("");
       setError(error instanceof Error ? error.message : "Unable to complete the payment.");
@@ -71,17 +71,16 @@ export function Checkout() {
   const loginQuery = new URLSearchParams({ next: returnPath });
   return <>
     <Link className="text-link" href={`/rooms?${bookingQuery(input)}`}><Icon name="back" /> Back to room</Link>
-    <div className="page-heading"><span className="eyebrow">Your GrandStay reservation</span><h1>Complete your booking</h1><p>Review your stay and complete the demo payment.</p></div>
+    <div className="page-heading"><span className="eyebrow">Your GrandStay reservation</span><h1>Complete your booking</h1><p>Review your stay and complete your payment.</p></div>
     <div className="checkout-grid">
       <section className="panel checkout-panel">
         <h2>Guest details</h2>
         {account === undefined ? <p role="status">Loading account…</p> : !account ? <div className="auth-form-stack"><p>Sign in or create a guest account. Your room selection will be saved in the link.</p><Link className="button button-primary" href={`/login?${loginQuery}`}>Sign in to book</Link><Link className="button button-soft" href={`/register?${loginQuery}`}>Create guest account</Link></div> : account.role !== "guest" ? <div className="auth-form-stack"><p className="auth-error">Reservations can only be created from a guest account.</p><Link className="button button-soft" href={`/login?${loginQuery}`}>Switch account</Link></div> : <>
           <div className="auth-notice"><Icon name="user" /><div><strong>{account.name}</strong><p>{account.email}</p></div></div>
-          <div className="payment-heading"><h2>Payment</h2><span className="role-pill">Demo only</span></div>
-          <div className="payment-provider"><span className="paystack-mark" aria-hidden="true"><i/><i/><i/></span><div><strong>Paystack</strong><p className="muted">Simulated checkout · NGN</p></div><Icon name="shield" /></div>
-          <p className="auth-disclaimer"><Icon name="info" />No real payment will be processed. Do not enter card or bank details.</p>
+          <div className="payment-heading"><h2>Payment</h2></div>
+          <div className="payment-provider"><span className="paystack-mark" aria-hidden="true"><i/><i/><i/></span><div><strong>Paystack</strong><p className="muted">Test checkout · NGN</p></div><Icon name="shield" /></div>
           {error && <p role="alert" className="auth-error">{error}</p>}
-          {reference ? <div className="demo-payment"><h3>Simulate a payment result</h3><p className="muted">Choose an outcome to test the booking flow.</p><button disabled={busy} onClick={() => void pay("success")} className="button button-primary">Simulate successful payment</button><button disabled={busy} onClick={() => void pay("failed")} className="button button-soft">Simulate failed payment</button><button disabled={busy} onClick={() => void pay("cancelled")} className="text-link">Cancel payment</button></div> : <button disabled={busy} onClick={() => { setError(""); setReference(`demo-${crypto.randomUUID()}`); }} className="button button-primary">Pay {formatMoney(quote.amount)} <Icon name="arrow" /></button>}
+          {reference ? <div className="demo-payment"><h3>Simulate a payment result</h3><button disabled={busy} onClick={() => void pay("success")} className="button button-primary">Simulate successful payment</button><button disabled={busy} onClick={() => void pay("failed")} className="button button-soft">Simulate failed payment</button><button disabled={busy} onClick={() => void pay("cancelled")} className="text-link">Cancel payment</button></div> : <button disabled={busy} onClick={() => { setError(""); setReference(`demo-${crypto.randomUUID()}`); }} className="button button-primary">Test payment · {formatMoney(quote.amount)} <Icon name="arrow" /></button>}
         </>}
       </section>
       <BookingSummary input={input} quote={quote} />

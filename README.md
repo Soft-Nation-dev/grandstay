@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GrandStay
 
-## Getting Started
+A mobile-first guest experience platform for a single hotel, with guest, staff, manager and super-admin workspaces.
 
-First, run the development server:
+## Run locally
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. Choose a preview account on the sign-in page to explore the role you need.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `app/` — public pages and role routes
+- `components/` — shared UI and feature components
+- `types/` — application data contracts
+- `data/mock.ts` — initial example records
+- `services/` — application operations and local persistence
+- `hooks/` — subscribed client state
+- `lib/` — formatting, rules and supporting calculations
+- `public/images/` — hotel image assets
+- `tests/` — browser smoke checks
 
-## Learn More
+## Validate changes
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+GitHub Actions also runs browser smoke checks against a production build.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Backend handover
 
-## Deploy on Vercel
+The current frontend is a demonstration. Use fictional account details. The local stores are not a production database, and test payments and sample identity submissions are not genuine transactions or verification.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Connect real authentication and permission checks first, followed by room inventory, reservations and Paystack verification. Then connect private ID uploads, staff reviews, room access, service requests, concierge messaging and management data.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Replace local service/store implementations and their hooks with server-backed operations. Preserve the UI components and adapt the TypeScript contracts to the agreed API. Remove the preview-account shortcuts, test-payment and identity-sample controls, and the consolidated dashboard explanation before production launch.
+
+The hotel team provides approved content, room prices and inventory, service information and loyalty policy. Backend authorization, payment verification, private storage and audit records must remain server-controlled.

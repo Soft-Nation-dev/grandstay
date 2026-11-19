@@ -1,0 +1,136 @@
+import assert from "node:assert/strict";
+import { chromium } from "playwright";
+
+const base = "http://127.0.0.1:3000";
+const browser = await chromium.launch({ headless: true });
+const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, timezoneId: "Africa/Lagos" });
+const page = await context.newPage();
+const errors = [];
+page.on("pageerror", error => errors.push(error.message));
+
+const date = offset => {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Lagos", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+  const value = type => parts.find(part => part.type === type).value;
+  const result = new Date(`${value("year")}-${value("month")}-${value("day")}T12:00:00Z`);
+  result.setUTCDate(result.getUTCDate() + offset);
+  return result.toISOString().slice(0, 10);
+};
+const go = async (route, target = page) => {
+  const response = await target.goto(base + route);
+  assert.ok(response && response.ok(), route);
+};
+const text = (value, target = page) => target.getByText(value, { exact: true }).first().waitFor({ state: "visible" });
+const roleLogin = async (role, target = page) => {
+  await go("/login", target);
+  const switchAccount = target.getByRole("button", { name: "Sign out and switch account" });
+  if (await switchAccount.isVisible()) await switchAccount.click();
+  await target.getByRole("button", { name: new RegExp(`^${role}\\b`, "i") }).click();
+  await target.waitForURL(`**/${role === "Super admin" ? "admin" : role.toLowerCase()}`);
+  await text("Frontend demonstration", target);
+};
+const fit = async target => {
+  await target.evaluate(() => document.fonts.ready);
+  const dimensions = await target.evaluate(() => ({ scroll: document.documentElement.scrollWidth, viewport: innerWidth }));
+  assert.ok(dimensions.scroll <= dimensions.viewport + 2, `Horizontal overflow: ${target.url()} at ${dimensions.viewport}px (${dimensions.scroll}px)`);
+};
+const signOut = async (target = page) => {
+  await target.getByRole("button", { name: "Sign out", exact: true }).click();
+  await target.waitForURL("**/login");
+};
+const checkIn = date(0);
+const checkOut = date(2);
+const query = new URLSearchParams({ room: "standard-cozy-haven", checkIn, checkOut, guests: "2" });
+try {
+  await go("/");
+  await fit(page);
+  await go("/rooms");
+  await fit(page);
+  await go("/staff");
+  await text("Sign in to continue");
+  await roleLogin("Guest");
+  await text("Recommended for you");
+  await go(`/checkout?${query}`);
+  await page.getByRole("button", { name: /^Test payment/ }).click();
+  await page.getByRole("button", { name: "Simulate failed payment" }).click();
+  await page.getByText(/^Payment failed\./).waitFor();
+  await page.getByRole("button", { name: /^Test payment/ }).click();
+  await page.getByRole("button", { name: "Cancel payment", exact: true }).click();
+  await page.getByText(/^Payment cancelled\./).waitFor();
+  await page.getByRole("button", { name: /^Test payment/ }).click();
+  await page.getByRole("button", { name: "Simulate successful payment" }).click();
+  await text("Booking confirmed!");
+  await go("/guest/check-in");
+  await page.getByRole("button", { name: "Attach sample" }).click();
+  await page.getByRole("button", { name: "Submit for review" }).click();
+  await text("Your details are under review");
+  await go("/guest/services");
+  await page.getByLabel("Request details (optional)").fill("Extra towels, please.");
+  await page.getByRole("button", { name: "Submit request" }).click();
+  await text("Request received.");
+  await go("/guest/concierge");
+  await page.getByLabel("Message", { exact: true }).fill("When is breakfast?");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await text("When is breakfast?");
+  await signOut();
+  await roleLogin("Staff");
+  await go("/staff/check-ins");
+  await page.getByRole("button", { name: "Approve check-in" }).click();
+  await text("Approved");
+  await go("/staff/services");
+  await page.getByRole("button", { name: "Mark in progress" }).click();
+  await page.getByRole("button", { name: "Mark done" }).click();
+  await text("Done");
+  await go("/staff/concierge");
+  await page.getByLabel("Message", { exact: true }).fill("Breakfast starts at 7 AM.");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await text("Breakfast starts at 7 AM.");
+  await signOut();
+  await roleLogin("Guest");
+  await go("/guest/access");
+  await page.locator(".access-code").waitFor();
+  assert.match(await page.locator(".access-code").first().innerText(), /^\d{6}$/);
+  await go("/guest/services");
+  await text("Done");
+  await go("/guest/concierge");
+  await text("Breakfast starts at 7 AM.");
+  await signOut();
+  await roleLogin("Manager");
+  await go("/manager/rooms");
+  await page.getByRole("button", { name: "Edit room", exact: true }).first().click();
+  await page.getByLabel("Nightly price (₦)").fill("61000");
+  await page.getByRole("button", { name: "Save room" }).click();
+  await page.getByRole("button", { name: "Save room" }).waitFor({ state: "hidden" });
+  await go(`/rooms?room=standard-cozy-haven`);
+  await text("₦61,000");
+  await go("/manager/bookings");
+  await text("Booking & payment activity");
+  await signOut();
+  await roleLogin("Super admin");
+  const staffPage = await context.newPage();
+  staffPage.on("pageerror", error => errors.push(error.message));
+  await roleLogin("Staff", staffPage);
+  const staffCard = page.locator(".admin-account").filter({ hasText: "Amina Bello" });
+  await staffCard.getByRole("button", { name: "Manage" }).click();
+  await staffCard.getByLabel("Account status").selectOption("inactive");
+  await staffCard.getByRole("button", { name: "Save changes" }).click();
+  await staffCard.locator(".experience-status").filter({ hasText: "Inactive" }).waitFor({ state: "visible" });
+  await text("Sign in to continue", staffPage);
+  await staffCard.getByRole("button", { name: "Manage" }).click();
+  await staffCard.getByLabel("Account status").selectOption("active");
+  await staffCard.getByRole("button", { name: "Save changes" }).click();
+  await staffPage.close();
+  for (const width of [375, 768, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await go("/");
+    await fit(page);
+    await go("/rooms");
+    await fit(page);
+    await go("/admin");
+    await text("Frontend demonstration");
+    await fit(page);
+  }
+  assert.deepEqual(errors, []);
+  console.log("GrandStay browser smoke checks passed");
+} finally {
+  await browser.close();
+}

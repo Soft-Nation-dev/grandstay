@@ -8,7 +8,7 @@ export function RoomCard({ room, query, nights = 0 }: { room: Room; query?: stri
   const params = new URLSearchParams(query);
   params.set("room", room.id);
   return <article className="room-card">
-    <div className="room-photo"><Image src={room.image} alt={room.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" /><span className="photo-tag">{room.category}</span></div>
+    <div className="room-photo"><Image src={room.image} alt={room.name} fill unoptimized={room.image.startsWith("data:")} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" /><span className="photo-tag">{room.category}</span></div>
     <div className="room-content">
       <span className="eyebrow">{room.view} · {room.size} m²</span>
       <h3>{room.name}</h3>

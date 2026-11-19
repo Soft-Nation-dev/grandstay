@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RecommendedRooms } from "@/components/public/recommended-rooms";
 import { RoleGuard } from "@/components/auth/role-guard";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { TeamAccounts } from "@/components/dashboard/team-accounts";
@@ -32,11 +33,11 @@ const workspaces: Record<Exclude<Role, "admin">, WorkspaceItem[]> = {
 };
 
 function WorkspaceCards({ role }: { role: Exclude<Role, "admin"> }) {
-  return <section className="workspace-section"><div><h2>Your workspace</h2><p className="muted">Features are introduced as each development milestone is completed.</p></div>
-    <div className="workspace-grid">{workspaces[role].map(item => <article className="panel workspace-card" key={item.title}><span className="feature-icon"><Icon name={item.icon} width={24} height={24} /></span><h3>{item.title}</h3><p>{item.description}</p>{item.href ? <Link className="text-link" href={item.href}>Explore <Icon name="arrow" /></Link> : <span className="upcoming-label">Coming in a later milestone</span>}</article>)}</div>
+  return <section className="workspace-section"><div><h2>Your workspace</h2><p className="muted">Manage your account and your stay.</p></div>
+    <div className="workspace-grid">{workspaces[role].map(item => <article className="panel workspace-card" key={item.title}><span className="feature-icon"><Icon name={item.icon} width={24} height={24} /></span><h3>{item.title}</h3><p>{item.description}</p>{item.href ? <Link className="text-link" href={item.href}>Explore <Icon name="arrow" /></Link> : null}</article>)}</div>
   </section>;
 }
 
 export function RoleHome({ role }: { role: Role }) {
-  return <RoleGuard role={role}><DashboardShell>{role === "admin" ? <TeamAccounts /> : <WorkspaceCards role={role} />}</DashboardShell></RoleGuard>;
+  return <RoleGuard role={role}><DashboardShell>{role === "admin" ? <TeamAccounts /> : <><WorkspaceCards role={role} />{role === "guest" && <RecommendedRooms />}</>}</DashboardShell></RoleGuard>;
 }

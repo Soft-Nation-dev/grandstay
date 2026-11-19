@@ -26,7 +26,7 @@ export function SiteShell({ children, active = "home" }: { children: ReactNode; 
     <main id="main-content" className="site-main">{children}</main>
     <footer className="site-footer"><div className="shell footer-inner">
       <Brand /><p>Thoughtful hospitality. Seamless stays.</p>
-      <span>GrandStay · Frontend preview</span>
+      <span>GrandStay Hospitality</span>
     </div></footer>
     <nav className="mobile-nav" aria-label="Mobile navigation">
       <Link href="/" aria-current={active === "home" ? "page" : undefined}><Icon name="home" />Home</Link>

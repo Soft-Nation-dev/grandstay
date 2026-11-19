@@ -16,7 +16,7 @@ export function saveRoom(input: Omit<Room, "id">, id?: string) {
   if (!name || name.length > 80 || !input.description.trim() || !input.bed.trim() || !input.view.trim()) throw new Error("Complete the room details.");
   if (!["Standard", "Deluxe", "Executive"].includes(input.category) || !Number.isSafeInteger(input.nightlyRate) || input.nightlyRate < 1 || input.nightlyRate > 100000000 || !Number.isInteger(input.inventory) || input.inventory < 0 || input.inventory > 1000 || !Number.isInteger(input.capacity) || input.capacity < 1 || input.capacity > 3 || !Number.isFinite(input.size) || input.size <= 0) throw new Error("Check the price, room size, inventory and capacity.");
   if (!roomImages.includes(input.image) && !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(input.image)) throw new Error("Select a room image.");
-  if (input.image.length > 450000) throw new Error("Choose a smaller image for this browser demo.");
+  if (input.image.length > 450000) throw new Error("Choose a smaller image.");
   if (id && !store.rooms.some(item => item.id === id)) throw new Error("Room type not found.");
   if (store.rooms.some(item => item.id !== id && item.name.toLowerCase() === name.toLowerCase())) throw new Error("A room type with this name already exists.");
   if (id) {
