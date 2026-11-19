@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { GuestNavigation } from "@/components/dashboard/guest-navigation";
@@ -19,7 +19,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   if (!account) return null;
   function logout() {
     signOut();
-    router.replace("/login");
+    router.replace("/login", { scroll: false });
   }
   return <>
     <a className="skip-link" href="#dashboard-content">Skip to content</a>

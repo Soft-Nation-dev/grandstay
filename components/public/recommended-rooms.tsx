@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import { useAuth } from "@/hooks/use-auth";
 import { useBookingStore } from "@/hooks/use-bookings";
 import { useManagement } from "@/hooks/use-management";

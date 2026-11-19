@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import type { ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Icon } from "@/components/ui/icon";

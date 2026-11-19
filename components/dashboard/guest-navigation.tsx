@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "@/components/ui/icon";
 
@@ -16,5 +16,5 @@ const links: { href: string; title: string; icon: IconName }[] = [
 
 export function GuestNavigation() {
   const pathname = usePathname().replace(/\/$/, "") || "/";
-  return <nav className="staff-navigation" aria-label="Guest navigation">{links.map(item => <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined}><Icon name={item.icon} /><span>{item.title}</span></Link>)}</nav>;
+  return <nav className="staff-navigation" aria-label="Guest navigation">{links.map(item => <Link resetScroll key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined}><Icon name={item.icon} /><span>{item.title}</span></Link>)}</nav>;
 }

@@ -1,5 +1,5 @@
 import Image from "@/components/ui/hotel-image";
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import { SiteShell } from "@/components/layout/site-shell";
 import { FeaturedRooms } from "@/components/public/featured-rooms";
 import { StaySearch } from "@/components/public/stay-search";

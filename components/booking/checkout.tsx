@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "@/components/ui/hotel-image";
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { Icon } from "@/components/ui/icon";
@@ -52,7 +52,7 @@ export function Checkout() {
     try {
       const booking = completeDemoPayment(input, reference, outcome);
       if (booking) {
-        router.replace(`/guest/bookings?confirmed=${encodeURIComponent(booking.id)}`);
+        router.replace(`/guest/bookings?confirmed=${encodeURIComponent(booking.id)}`, { scroll: false });
         return;
       }
       setReference("");

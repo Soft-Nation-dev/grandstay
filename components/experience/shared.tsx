@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import type { ReactNode } from "react";
 import { Icon } from "@/components/ui/icon";
 import type { Booking } from "@/types/booking";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import { useBookingStore } from "@/hooks/use-bookings";
 import { useExperience } from "@/hooks/use-experience";
 import { useManagement } from "@/hooks/use-management";

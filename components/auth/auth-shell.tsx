@@ -1,5 +1,5 @@
 import Image from "@/components/ui/hotel-image";
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import type { ReactNode } from "react";
 import { Brand } from "@/components/layout/site-shell";
 import { Icon } from "@/components/ui/icon";
