@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import { Icon } from "@/components/ui/icon";
 import { useAuth } from "@/hooks/use-auth";
 import { roleRoutes } from "@/types/auth";
