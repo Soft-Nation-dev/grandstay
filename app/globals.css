@@ -483,3 +483,6 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .dashboard-explanation .feature-icon { flex:none; }
 .dashboard-explanation h2 { font-size:16px; margin:0 0 6px; }
 .dashboard-explanation p { font-size:13px; line-height:1.6; color:var(--muted); }
+
+.dashboard-page > * { min-width:0; }
+.staff-navigation { min-width:0; max-width:100%; }
