@@ -1,18 +1,26 @@
 import { reservations, rooms } from "@/data/mock";
 import { stayNights } from "@/lib/format";
-import type { Room, StaySearch } from "@/types/hotel";
+import type { Room, StaySearch, RoomReservation } from "@/types/hotel";
+import type { Booking } from "@/types/booking";
 
 export const getRooms = () => rooms;
 export const getFeaturedRooms = () => rooms.filter((room) => room.featured);
 export const getRoom = (id: string) => rooms.find((room) => room.id === id);
 
-export function availableInventory(room: Room, stay: StaySearch) {
+export function availableInventory(room: Room, stay: StaySearch, bookings: Booking[] = []) {
   if (!stayNights(stay.checkIn, stay.checkOut)) return 0;
-  return Math.max(0, room.inventory - reservations.filter((reservation) =>
-    reservation.roomId === room.id && reservation.checkIn < stay.checkOut && reservation.checkOut > stay.checkIn
-  ).reduce((total, reservation) => total + reservation.quantity, 0));
+  const all: RoomReservation[] = [...reservations, ...bookings.map(({ roomId, checkIn, checkOut }) => ({ roomId, checkIn, checkOut, quantity: 1 }))];
+  const overlapping = all.filter(item => item.roomId === room.id && item.checkIn < stay.checkOut && item.checkOut > stay.checkIn);
+  const events = overlapping.flatMap(item => [{ date: item.checkIn < stay.checkIn ? stay.checkIn : item.checkIn, delta: item.quantity }, { date: item.checkOut, delta: -item.quantity }]).sort((a, b) => a.date.localeCompare(b.date) || a.delta - b.delta);
+  let occupied = 0;
+  let peak = 0;
+  for (const event of events) {
+    occupied += event.delta;
+    peak = Math.max(peak, occupied);
+  }
+  return Math.max(0, room.inventory - peak);
 }
 
-export function findRooms(stay: StaySearch) {
-  return rooms.filter((room) => room.capacity >= stay.guests && availableInventory(room, stay) > 0);
+export function findRooms(stay: StaySearch, bookings: Booking[] = []) {
+  return rooms.filter(room => room.capacity >= stay.guests && availableInventory(room, stay, bookings) > 0);
 }
