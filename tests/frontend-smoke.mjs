@@ -21,6 +21,7 @@ const go = async (route, target = page) => {
   const url = staticBuild ? `${base}${pathname.endsWith("/") ? pathname : `${pathname}/`}${query ? `?${query}` : ""}` : base + route;
   const response = await target.goto(url);
   assert.ok(response && response.ok(), route);
+  await target.locator('[data-gs-reveal="shown"]:visible').first().waitFor();
 };
 const text = (value, target = page) => target.getByText(value, { exact: true }).first().waitFor({ state: "visible" });
 const roleLogin = async (role, target = page) => {
@@ -30,6 +31,7 @@ const roleLogin = async (role, target = page) => {
   await target.getByRole("button", { name: new RegExp(`^${role}\\b`, "i") }).click();
   await target.waitForURL(url => url.pathname.replace(/\/$/, "").endsWith(`/${role === "Super admin" ? "admin" : role.toLowerCase()}`));
   await text("This is a demo demonstration", target);
+  await target.locator('.dashboard-welcome[data-gs-reveal="shown"]:visible').first().waitFor();
 };
 const fit = async target => {
   await target.evaluate(() => document.fonts.ready);
@@ -97,9 +99,12 @@ try {
   await go("/");
   await fit(page);
   assert.equal(await page.locator(".hero-copy h1").evaluate(node => getComputedStyle(node).animationName), "gs-enter");
+  assert.equal(await page.locator(".hero").evaluate(node => getComputedStyle(node).animationName), "gs-reveal");
   await page.emulateMedia({ reducedMotion: "reduce" });
   assert.equal(await page.locator(".hero-copy h1").evaluate(node => getComputedStyle(node).animationName), "none");
   assert.equal(await page.locator(".header-cta").evaluate(node => getComputedStyle(node).transitionDuration), "0s");
+  await page.waitForFunction(() => !document.querySelector("[data-gs-reveal]"));
+  assert.equal(await page.locator(".hero").evaluate(node => getComputedStyle(node).animationName), "none");
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.locator("img").first().evaluate(image => image.decode());
   await viewPhoto(page, ".hero-image", "escape", true);
@@ -107,6 +112,20 @@ try {
   await go("/rooms");
   await viewPhoto(page, ".room-photo");
   await fit(page);
+  for (const width of [375, 430]) {
+    await page.setViewportSize({ width, height: 760 });
+    await go("/");
+    const grid = page.locator(".experience-grid");
+    assert.equal(await grid.evaluate(node => getComputedStyle(node).gridTemplateColumns.split(" ").length), 1);
+    const card = grid.locator(".experience-card").first();
+    await grid.locator('.experience-card[data-gs-reveal="waiting"]').first().waitFor({ state: "attached" });
+    assert.equal(await card.getAttribute("data-gs-reveal"), "waiting");
+    await card.scrollIntoViewIfNeeded();
+    await card.evaluate(node => node.getBoundingClientRect());
+    await page.waitForFunction(() => document.querySelector(".experience-card")?.getAttribute("data-gs-reveal") === "shown");
+    assert.equal(await card.evaluate(node => getComputedStyle(node).animationName), "gs-reveal");
+    await fit(page);
+  }
   await page.setViewportSize({ width: 375, height: 760 });
   await go("/");
   const mobileNav = page.getByRole("navigation", { name: "Mobile navigation" });
@@ -116,6 +135,7 @@ try {
   await scrollDown(page);
   await mobileNav.getByRole("link", { name: "Rooms", exact: true }).click();
   await page.getByRole("heading", { name: "Rooms & suites", level: 1 }).waitFor();
+  await page.locator('.page-heading[data-gs-reveal="shown"]:visible').first().waitFor();
   await atTop(page);
   await scrollDown(page);
   await mobileNav.getByRole("link", { name: "Rooms", exact: true }).click();
@@ -151,6 +171,8 @@ try {
   await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Rooms & suites" }).click();
   await page.getByRole("heading", { name: "Rooms & suites", level: 1 }).waitFor();
   await atTop(page);
+  await go("/register");
+  await page.locator('.auth-content[data-gs-reveal="shown"]:visible').first().waitFor();
   await go("/staff");
   await text("Sign in to continue");
   await roleLogin("Guest");
