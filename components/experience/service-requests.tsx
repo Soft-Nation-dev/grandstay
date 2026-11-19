@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { serviceCategories } from "@/data/mock";
 import { useAuth, useAccounts } from "@/hooks/use-auth";
@@ -65,7 +66,9 @@ export function GuestServices() {
 export function StaffServices() {
   const { requests } = useExperience();
   const accounts = useAccounts();
-  const [filter, setFilter] = useState<"all" | RequestStatus>("all");
-  const visible = requests.filter(item => filter === "all" || item.status === filter).reverse();
-  return <section className="workspace-section"><ExperienceHeading role="staff" title="Service requests" description="Manage guest requests and keep their status up to date." /><div className="filter-tabs">{(["all", ...sequence] as const).map(status => <button key={status} aria-pressed={status === filter} className={status === filter ? "filter-active" : ""} onClick={() => setFilter(status)}>{status === "all" ? "All" : statusLabels[status]}</button>)}</div>{visible.length ? <div className="workspace-grid">{visible.map(request => <RequestCard key={request.id} request={request} guest={accounts.find(account => account.id === request.guestId)?.name ?? "Guest"} staff />)}</div> : <EmptyExperience title="No matching requests" description="Guest service requests will appear here." />}</section>;
+  const params = useSearchParams();
+  const focus = params.get("request");
+  const filter = params.get("view") ?? "all";
+  const visible = requests.filter(item => (!focus || item.id === focus) && (filter === "all" || (filter === "open" ? item.status !== "done" : item.status === filter))).reverse();
+  return <section className="workspace-section"><ExperienceHeading role="staff" title="Service requests" description="Manage guest requests and keep their status up to date." /><div className="filter-tabs" aria-label="Service request filters">{(["all", "open", ...sequence] as const).map(status => <Link key={status} aria-current={!focus && status === filter ? "true" : undefined} className={!focus && status === filter ? "filter-active" : ""} href={status === "all" ? "/staff/services" : `/staff/services?view=${status}`}>{status === "all" ? "All" : status === "open" ? "Open" : statusLabels[status]}</Link>)}</div>{focus && <Link className="text-link" href="/staff/services">Clear selected request</Link>}{visible.length ? <div className="workspace-grid">{visible.map(request => <RequestCard key={request.id} request={request} guest={accounts.find(account => account.id === request.guestId)?.name ?? "Guest"} staff />)}</div> : <EmptyExperience title="No matching requests" description="Guest service requests will appear here." />}</section>;
 }
