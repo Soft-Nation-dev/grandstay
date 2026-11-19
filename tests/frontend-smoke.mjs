@@ -115,6 +115,13 @@ try {
   await text("Sign in to continue");
   await roleLogin("Guest");
   await text("Recommended for you");
+  const stay = page.getByRole("region", { name: "Stay overview" });
+  await stay.getByRole("link", { name: "All bookings" }).waitFor();
+  assert.match(await stay.innerText(), /Hotel records/);
+  assert.ok(await stay.evaluate(node => node.compareDocumentPosition(document.querySelector(".workspace-section")) & Node.DOCUMENT_POSITION_FOLLOWING));
+  await page.setViewportSize({ width: 375, height: 760 });
+  await fit(page);
+  await page.setViewportSize({ width: 1280, height: 900 });
   await go("/guest/bookings");
   await text("Previous reservations");
   assert.equal(await page.locator(".dataset-record:visible").count(), 5);
@@ -130,7 +137,10 @@ try {
   await page.getByRole("button", { name: /^Test payment/ }).click();
   await page.getByRole("button", { name: "Simulate successful payment" }).click();
   await text("Booking confirmed!");
-  await go("/guest/check-in");
+  await go("/guest");
+  await stay.getByText("Your current stay", { exact: true }).waitFor();
+  await stay.getByRole("heading", { name: "Standard Cozy Haven" }).waitFor();
+  await stay.getByRole("link", { name: "Complete check-in" }).click();
   await page.getByRole("button", { name: "Attach sample" }).click();
   await page.getByRole("button", { name: "Submit for review" }).click();
   await text("Your details are under review");
@@ -169,7 +179,8 @@ try {
   await text("Breakfast starts at 7 AM.");
   await signOut();
   await roleLogin("Guest");
-  await go("/guest/access");
+  await stay.getByRole("link", { name: "View room access" }).waitFor();
+  await stay.getByRole("link", { name: "View room access" }).click();
   await page.locator(".access-code").waitFor();
   assert.match(await page.locator(".access-code").first().innerText(), /^\d{6}$/);
   await go("/guest/services");
