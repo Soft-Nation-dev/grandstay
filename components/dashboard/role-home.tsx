@@ -15,6 +15,7 @@ const workspaces: Record<Exclude<Role, "admin">, WorkspaceItem[]> = {
     { title: "Concierge", description: "Contact hotel staff with questions about your stay.", icon: "chat", href: "/guest/concierge" },
     { title: "Service requests", description: "Request hotel assistance and track its progress.", icon: "list", href: "/guest/services" },
     { title: "Room access", description: "View the temporary access code after check-in approval.", icon: "key", href: "/guest/access" },
+    { title: "Loyalty points", description: "See points earned from completed eligible stays.", icon: "people", href: "/guest/loyalty" },
   ],
   staff: [
     { title: "Reservations", description: "View guest reservations and upcoming arrivals.", icon: "calendar", href: "/staff/bookings" },
