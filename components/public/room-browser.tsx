@@ -65,7 +65,7 @@ export function RoomBrowser() {
   const matches = (stay ? findRooms(stay, bookings, rooms) : rooms).filter((item) => category === "All" || item.category === category);
   const results = [...matches].sort((a, b) => sort === "price-low" ? a.nightlyRate - b.nightlyRate : sort === "price-high" ? b.nightlyRate - a.nightlyRate : 0);
   return <>
-    <div className="page-heading"><span className="eyebrow">Stay at GrandStay</span><h1>Rooms &amp; suites</h1><p>Find a space to make your own, with the comforts that matter most.</p></div>
+    <div className="page-heading"><span className="eyebrow">Stay at Guestly</span><h1>Rooms &amp; suites</h1><p>Find a space to make your own, with the comforts that matter most.</p></div>
     {roomId && <p className="form-error" role="alert">We could not find that room. Explore our available rooms below.</p>}
     <section className="panel search-panel" aria-label="Find rooms"><StaySearch key={queryString} initial={stay} /></section>
     {!!(checkIn || checkOut) && !stay && <p className="form-error" role="alert">Enter valid dates and guest count to check availability.</p>}
