@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import { Suspense, type ReactNode } from "react";
 import { RouteScroll } from "@/components/navigation/route-scroll";
 import "./globals.css";
+import "./premium.css";
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta", display: "swap" });
 
