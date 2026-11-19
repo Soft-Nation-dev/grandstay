@@ -10,18 +10,18 @@ type WorkspaceItem = { title: string; description: string; icon: IconName; href?
 const workspaces: Record<Exclude<Role, "admin">, WorkspaceItem[]> = {
   guest: [
     { title: "Explore rooms", description: "Browse rooms and find availability for your next stay.", icon: "bed", href: "/rooms" },
-    { title: "My bookings", description: "View and manage your confirmed reservations.", icon: "calendar" },
+    { title: "My bookings", description: "View your confirmed reservations.", icon: "calendar", href: "/guest/bookings" },
     { title: "Digital check-in", description: "Submit your arrival details before you travel.", icon: "key" },
     { title: "Concierge & services", description: "Contact hotel staff and track service requests.", icon: "chat" },
   ],
   staff: [
-    { title: "Reservations", description: "View guest reservations and upcoming arrivals.", icon: "calendar" },
+    { title: "Reservations", description: "View guest reservations and upcoming arrivals.", icon: "calendar", href: "/staff/bookings" },
     { title: "Check-in queue", description: "Review guest check-in submissions.", icon: "key" },
     { title: "Service requests", description: "Manage and update guest service requests.", icon: "list" },
     { title: "Concierge", description: "Respond to guest enquiries.", icon: "chat" },
   ],
   manager: [
-    { title: "Bookings & payments", description: "Monitor reservations and payment activity.", icon: "chart" },
+    { title: "Bookings & payments", description: "Monitor reservations and payment activity.", icon: "chart", href: "/manager/bookings" },
     { title: "Room management", description: "Manage room inventory, prices and availability.", icon: "bed" },
     { title: "Service performance", description: "Review hotel service delivery.", icon: "list" },
     { title: "Loyalty", description: "Manage loyalty rules and review completed stays.", icon: "people" },

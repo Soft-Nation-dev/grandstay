@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { checkoutReturn } from "@/lib/booking-query";
 import { demoAccounts, demoPassword } from "@/data/mock";
 import { Icon } from "@/components/ui/icon";
 import { PasswordField } from "@/components/auth/password-field";
@@ -13,6 +14,9 @@ import { roleLabels, roleRoutes } from "@/types/auth";
 
 export function AuthForm({ register = false }: { register?: boolean }) {
   const router = useRouter();
+  const params = useSearchParams();
+  const next = checkoutReturn(params.get("next"));
+  const nextQuery = next ? `?${new URLSearchParams({ next })}` : "";
   const account = useAuth();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -21,7 +25,7 @@ export function AuthForm({ register = false }: { register?: boolean }) {
     setBusy(true);
     try {
       const user = await action();
-      router.replace(roleRoutes[user.role]);
+      router.replace(user.role === "guest" && next ? next : roleRoutes[user.role]);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
     } finally {
@@ -41,7 +45,7 @@ export function AuthForm({ register = false }: { register?: boolean }) {
   }
   if (account) return <div className="auth-form-stack">
     <div className="auth-notice"><Icon name="check" /><span>You are signed in as {account.name} ({roleLabels[account.role]}).</span></div>
-    <Link className="button button-primary" href={roleRoutes[account.role]}>Go to dashboard <Icon name="arrow" /></Link>
+    <Link className="button button-primary" href={account.role === "guest" && next ? next : roleRoutes[account.role]}>{account.role === "guest" && next ? "Continue booking" : "Go to dashboard"} <Icon name="arrow" /></Link>
     <button className="button button-soft" onClick={() => { signOut(); setError(""); }}>Sign out and switch account</button>
   </div>;
   return <div className="auth-form-stack">
@@ -53,7 +57,7 @@ export function AuthForm({ register = false }: { register?: boolean }) {
       {error && <p className="auth-error" role="alert">{error}</p>}
       <button disabled={busy || account === undefined} className="button button-primary auth-submit" type="submit">{busy ? "Please wait…" : register ? "Create guest account" : "Sign in"}<Icon name="arrow" /></button>
     </form>
-    <p className="auth-switch">{register ? "Already have an account?" : "New to GrandStay?"} <Link href={register ? "/login" : "/register"}>{register ? "Sign in" : "Create guest account"}</Link></p>
+    <p className="auth-switch">{register ? "Already have an account?" : "New to GrandStay?"} <Link href={`${register ? "/login" : "/register"}${nextQuery}`}>{register ? "Sign in" : "Create guest account"}</Link></p>
     {!register && <section className="demo-section">
       <h3>Explore the demo</h3><p>Choose a role to sign in with a sample account.</p>
       <div className="demo-grid">{demoAccounts.map(user => <button className="demo-role" key={user.id} disabled={busy || account === undefined} onClick={() => void authenticate(() => signIn({ email: user.email, password: demoPassword }))}><Icon name={user.role === "guest" ? "user" : user.role === "staff" ? "people" : user.role === "manager" ? "chart" : "shield"} />{roleLabels[user.role]}</button>)}</div>
