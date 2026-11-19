@@ -1,4 +1,5 @@
-import { documentKinds, serviceCategories } from "@/data/mock";
+import { documentKinds } from "@/data/mock";
+import { readManagementStore } from "@/services/management-store";
 import { getSession, getAccounts } from "@/services/auth";
 import { readBookingStore } from "@/services/booking-store";
 import { readExperienceStore, writeExperienceStore } from "@/services/experience-store";
@@ -63,7 +64,7 @@ export function createServiceRequest(bookingId: string, category: string, detail
   const guest = requireRole("guest");
   const booking = guestBooking(bookingId, guest.id);
   if (!activeStay(booking)) throw new Error("Services are available during your stay.");
-  if (!serviceCategories.some(item => item.name === category) || details.length > 500) throw new Error("Check the service category and request details.");
+  if (!readManagementStore().services.some(item => item.active && item.name === category) || details.length > 500) throw new Error("Check the service category and request details.");
   const store = readExperienceStore();
   const at = new Date().toISOString();
   writeExperienceStore({ ...store, requests: [...store.requests, { id: crypto.randomUUID(), bookingId, guestId: guest.id, category, details: details.trim(), status: "received", history: [{ status: "received", at }] }] });
