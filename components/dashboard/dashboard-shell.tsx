@@ -32,7 +32,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       {account.role === "guest" && <GuestNavigation />}
       {account.role === "staff" && <StaffNavigation />}
       {account.role === "manager" && <ManagerNavigation />}
-      {pathname === roleRoutes[account.role] && <aside className="panel dashboard-explanation"><span className="feature-icon"><Icon name="info" /></span><div><h2>Frontend demonstration</h2><p>Use fictional details only. Accounts, hotel records and messages are stored in this browser. Payments, identity checks and access codes are simulations; no money is charged, no actual ID is uploaded and no physical door is unlocked. Live authentication, shared data and integrations will be enabled by the backend.</p></div></aside>}
+      {pathname === roleRoutes[account.role] && <aside className="dashboard-explanation"><Icon name="info" width={17} height={17} /><p>This is a demo demonstration</p></aside>}
       {children}
     </main>
   </>;

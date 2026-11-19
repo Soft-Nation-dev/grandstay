@@ -29,7 +29,7 @@ const roleLogin = async (role, target = page) => {
   if (await switchAccount.isVisible()) await switchAccount.click();
   await target.getByRole("button", { name: new RegExp(`^${role}\\b`, "i") }).click();
   await target.waitForURL(url => url.pathname.replace(/\/$/, "").endsWith(`/${role === "Super admin" ? "admin" : role.toLowerCase()}`));
-  await text("Frontend demonstration", target);
+  await text("This is a demo demonstration", target);
 };
 const fit = async target => {
   await target.evaluate(() => document.fonts.ready);
@@ -201,7 +201,7 @@ try {
     await go("/rooms");
     await fit(page);
     await go("/admin");
-    await text("Frontend demonstration");
+    await text("This is a demo demonstration");
     await fit(page);
   }
   assert.deepEqual(errors, []);
