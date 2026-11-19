@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { latestConversations } from "@/lib/staff-operations";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAuth, useAccounts } from "@/hooks/use-auth";
 import { useExperience } from "@/hooks/use-experience";
@@ -31,8 +34,11 @@ export function GuestConcierge() {
 export function StaffConcierge() {
   const { messages } = useExperience();
   const accounts = useAccounts();
-  const [selected, setSelected] = useState("");
-  const guestIds = [...new Set([...messages].reverse().map(message => message.guestId))];
+  const params = useSearchParams();
+  const selected = params.get("guest") ?? "";
+  const waiting = params.get("view") === "waiting";
+  const latest = latestConversations(messages);
+  const guestIds = latest.filter(message => !waiting || message.sender === "guest").map(message => message.guestId);
   const guestId = guestIds.includes(selected) ? selected : guestIds[0];
-  return <section className="workspace-section"><ExperienceHeading role="staff" title="Concierge inbox" description="Respond to enquiries from hotel guests." />{guestId ? <div className="concierge-grid"><aside className="panel conversation-list"><h3>Conversations</h3>{guestIds.map(id => <button className={id === guestId ? "conversation-active" : ""} key={id} onClick={() => setSelected(id)} aria-pressed={id === guestId}><Icon name="user" /><span>{accounts.find(account => account.id === id)?.name ?? "Guest"}</span></button>)}</aside><Conversation key={guestId} guestId={guestId} title={accounts.find(account => account.id === guestId)?.name ?? "Guest"} messages={messages.filter(message => message.guestId === guestId)} staff /></div> : <EmptyExperience title="No conversations yet" description="New guest enquiries will appear here." />}</section>;
+  return <section className="workspace-section"><ExperienceHeading role="staff" title="Concierge inbox" description="Respond to enquiries from hotel guests." /><div className="filter-tabs"><Link className={!waiting ? "filter-active" : ""} aria-current={!waiting ? "true" : undefined} href="/staff/concierge">All conversations</Link><Link className={waiting ? "filter-active" : ""} aria-current={waiting ? "true" : undefined} href="/staff/concierge?view=waiting">Awaiting reply</Link></div>{guestId ? <div className="concierge-grid"><aside className="panel conversation-list"><h3>Conversations</h3>{guestIds.map(id => <Link className={id === guestId ? "conversation-active" : ""} key={id} href={`/staff/concierge?${new URLSearchParams({ guest: id, ...(waiting ? { view: "waiting" } : {}) })}`} aria-current={id === guestId ? "true" : undefined}><Icon name="user" /><span>{accounts.find(account => account.id === id)?.name ?? "Guest"}</span></Link>)}</aside><Conversation key={guestId} guestId={guestId} title={accounts.find(account => account.id === guestId)?.name ?? "Guest"} messages={messages.filter(message => message.guestId === guestId)} staff /></div> : <EmptyExperience title="No conversations yet" description="New guest enquiries will appear here." />}</section>;
 }
