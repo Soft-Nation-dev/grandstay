@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AccountLink } from "@/components/auth/account-link";
 import type { ReactNode } from "react";
 import { Icon } from "@/components/ui/icon";
 import { hotel } from "@/data/mock";
@@ -20,7 +21,7 @@ export function SiteShell({ children, active = "home" }: { children: ReactNode; 
         <Link href="/rooms" aria-current={active === "rooms" ? "page" : undefined}>Rooms &amp; suites</Link>
         <Link href="/#experience">Guest experience</Link>
       </nav>
-      <Link className="button button-primary header-cta" href="/rooms">Find a room <Icon name="arrow" /></Link>
+      <div className="header-actions"><AccountLink /><Link className="button button-primary header-cta" href="/rooms">Find a room <Icon name="arrow" /></Link></div>
     </div></header>
     <main id="main-content" className="site-main">{children}</main>
     <footer className="site-footer"><div className="shell footer-inner">
@@ -31,6 +32,7 @@ export function SiteShell({ children, active = "home" }: { children: ReactNode; 
       <Link href="/" aria-current={active === "home" ? "page" : undefined}><Icon name="home" />Home</Link>
       <Link href="/rooms" aria-current={active === "rooms" ? "page" : undefined}><Icon name="bed" />Rooms</Link>
       <Link href="/#experience"><Icon name="chat" />Experience</Link>
+      <AccountLink mobile />
     </nav>
   </>;
 }
