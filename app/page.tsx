@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/ui/hotel-image";
 import Link from "next/link";
 import { SiteShell } from "@/components/layout/site-shell";
 import { FeaturedRooms } from "@/components/public/featured-rooms";
