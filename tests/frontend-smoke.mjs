@@ -31,6 +31,7 @@ const roleLogin = async (role, target = page) => {
   await target.getByRole("button", { name: new RegExp(`^${role}\\b`, "i") }).click();
   await target.waitForURL(url => url.pathname.replace(/\/$/, "").endsWith(`/${role === "Super admin" ? "admin" : role.toLowerCase()}`));
   await text("This is a demo demonstration", target);
+  await target.getByText(new RegExp("@guestly\\.example$")).first().waitFor();
   await target.locator('.dashboard-welcome[data-gs-reveal="shown"]:visible').first().waitFor();
 };
 const fit = async target => {
@@ -97,6 +98,8 @@ const checkOut = date(2);
 const query = new URLSearchParams({ room: "standard-cozy-haven", checkIn, checkOut, guests: "2" });
 try {
   await go("/");
+  await page.getByRole("link", { name: "Guestly home" }).first().waitFor();
+  assert.match(await page.title(), /Guestly/);
   await fit(page);
   assert.equal(await page.locator(".hero-copy h1").evaluate(node => getComputedStyle(node).animationName), "gs-enter");
   assert.equal(await page.locator(".hero").evaluate(node => getComputedStyle(node).animationName), "gs-reveal");
