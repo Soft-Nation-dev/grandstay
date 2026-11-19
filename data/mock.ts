@@ -1,7 +1,7 @@
 import type { ManagementStore } from "@/types/management";
 import type { DocumentKind, ExperienceStore } from "@/types/experience";
 import type { BookingStore } from "@/types/booking";
-import type { Account } from "@/types/auth";
+import type { Account, AccountPolicy } from "@/types/auth";
 import type { Room, RoomReservation } from "@/types/hotel";
 
 export const hotel = {
@@ -38,10 +38,10 @@ export const reservations: RoomReservation[] = [];
 export const demoPassword = "GrandStay123!";
 
 export const demoAccounts: Account[] = [
-  { id: "demo-guest", name: "Alex Morgan", email: "guest@grandstay.example", role: "guest" },
-  { id: "demo-staff", name: "Amina Bello", email: "staff@grandstay.example", role: "staff" },
-  { id: "demo-manager", name: "Tunde Adeyemi", email: "manager@grandstay.example", role: "manager" },
-  { id: "demo-admin", name: "GrandStay Admin", email: "admin@grandstay.example", role: "admin" },
+  { id: "demo-guest", name: "Alex Morgan", email: "guest@grandstay.example", role: "guest", active: true },
+  { id: "demo-staff", name: "Amina Bello", email: "staff@grandstay.example", role: "staff", active: true },
+  { id: "demo-manager", name: "Tunde Adeyemi", email: "manager@grandstay.example", role: "manager", active: true },
+  { id: "demo-admin", name: "GrandStay Admin", email: "admin@grandstay.example", role: "admin", active: true },
 ];
 
 export const initialBookingStore: BookingStore = { bookings: [], audit: [] };
@@ -65,3 +65,5 @@ export const initialManagementStore: ManagementStore = {
   services: serviceCategories.map((service, index) => ({ ...service, id: `service-${index + 1}`, active: true })),
   loyaltyRules: [{ pointsPerNight: 10, effectiveAt: "1970-01-01T00:00:00.000Z" }],
 };
+
+export const initialAccountPolicies: Record<string, AccountPolicy> = {};
