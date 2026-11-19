@@ -6,13 +6,13 @@ The frontend also gives hotel staff, managers and super admins their own workspa
 
 ## Try it out
 
-The site is moving to [Guestly](https://soft-nation-dev.github.io/guestly/). Until the repository rename is complete, use the [current website](https://soft-nation-dev.github.io/grandstay/).
+[Open Guestly](https://soft-nation-dev.github.io/guestly/)
 
 You can browse rooms without an account. To explore the dashboards, head to the sign-in page and choose one of the four preview accounts.
 
 ## Running the project locally
 
-Make sure Node.js is installed, then clone the repository and run these commands once the repository rename is complete:
+Make sure Node.js is installed, then clone the repository and run:
 
 ```bash
 git clone https://github.com/Soft-Nation-dev/guestly.git
