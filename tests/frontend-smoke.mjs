@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
-const base = "http://127.0.0.1:3000";
+const base = process.env.SMOKE_BASE_URL ?? "http://127.0.0.1:3000";
+const staticBuild = Boolean(process.env.SMOKE_BASE_URL);
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, timezoneId: "Africa/Lagos" });
 const page = await context.newPage();
@@ -16,7 +17,9 @@ const date = offset => {
   return result.toISOString().slice(0, 10);
 };
 const go = async (route, target = page) => {
-  const response = await target.goto(base + route);
+  const [pathname, query] = route.split("?");
+  const url = staticBuild ? `${base}${pathname.endsWith("/") ? pathname : `${pathname}/`}${query ? `?${query}` : ""}` : base + route;
+  const response = await target.goto(url);
   assert.ok(response && response.ok(), route);
 };
 const text = (value, target = page) => target.getByText(value, { exact: true }).first().waitFor({ state: "visible" });
@@ -25,7 +28,7 @@ const roleLogin = async (role, target = page) => {
   const switchAccount = target.getByRole("button", { name: "Sign out and switch account" });
   if (await switchAccount.isVisible()) await switchAccount.click();
   await target.getByRole("button", { name: new RegExp(`^${role}\\b`, "i") }).click();
-  await target.waitForURL(`**/${role === "Super admin" ? "admin" : role.toLowerCase()}`);
+  await target.waitForURL(url => url.pathname.replace(/\/$/, "").endsWith(`/${role === "Super admin" ? "admin" : role.toLowerCase()}`));
   await text("Frontend demonstration", target);
 };
 const fit = async target => {
@@ -35,7 +38,7 @@ const fit = async target => {
 };
 const signOut = async (target = page) => {
   await target.getByRole("button", { name: "Sign out", exact: true }).click();
-  await target.waitForURL("**/login");
+  await target.waitForURL(url => url.pathname.replace(/\/$/, "").endsWith("/login"));
 };
 const checkIn = date(0);
 const checkOut = date(2);
@@ -43,6 +46,7 @@ const query = new URLSearchParams({ room: "standard-cozy-haven", checkIn, checkO
 try {
   await go("/");
   await fit(page);
+  await page.locator("img").first().evaluate(image => image.decode());
   await go("/rooms");
   await fit(page);
   await go("/staff");
