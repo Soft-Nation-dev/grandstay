@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "@/components/ui/hotel-image";
+import { Disclosure } from "@/components/motion/disclosure";
 import { useState, type FormEvent, type ChangeEvent } from "react";
 import { roomImages } from "@/data/mock";
 import { useManagement } from "@/hooks/use-management";
@@ -61,7 +62,7 @@ export function RoomManagement() {
   const [editing, setEditing] = useState<string | null>(null);
   return <section className="workspace-section">
     <div className="staff-snapshot-heading"><div><span className="eyebrow">Hotel configuration</span><h2>Room management</h2><p className="muted">Manage room types, prices, photos and inventory.</p></div><button className="button button-primary" onClick={() => setEditing("new")}>Add room type <Icon name="arrow" /></button></div>
-    {editing === "new" && <RoomEditor key="new" onClose={() => setEditing(null)} />}
-    <div className="room-grid">{rooms.map(room => <article className="panel management-panel" key={room.id}><div className="management-image"><Image src={room.image} alt={room.name} fill sizes="(max-width:760px) 100vw,33vw" unoptimized={room.image.startsWith("data:")} /></div><div className="booking-card-heading"><h3>{room.name}</h3><span className="role-pill">{room.inventory ? "Listed" : "Unavailable"}</span></div><p className="muted">{room.category} · {room.capacity} guests · {room.inventory} rooms</p><strong className="price">{formatMoney(room.nightlyRate)} <small className="muted">/ night</small></strong><button className="button button-soft" aria-expanded={editing === room.id} onClick={() => setEditing(editing === room.id ? null : room.id)}>Edit room</button>{editing === room.id && <div className="management-inline-editor"><RoomEditor key={room.id} room={room} onClose={() => setEditing(null)} /></div>}</article>)}</div>
+    <Disclosure open={editing === "new"}><RoomEditor key="new" onClose={() => setEditing(null)} /></Disclosure>
+    <div className="room-grid">{rooms.map(room => <article className="panel management-panel" key={room.id}><div className="management-image"><Image src={room.image} alt={room.name} fill sizes="(max-width:760px) 100vw,33vw" unoptimized={room.image.startsWith("data:")} /></div><div className="booking-card-heading"><h3>{room.name}</h3><span className="role-pill">{room.inventory ? "Listed" : "Unavailable"}</span></div><p className="muted">{room.category} · {room.capacity} guests · {room.inventory} rooms</p><strong className="price">{formatMoney(room.nightlyRate)} <small className="muted">/ night</small></strong><button className="button button-soft" aria-expanded={editing === room.id} onClick={() => setEditing(editing === room.id ? null : room.id)}>Edit room</button><Disclosure open={editing === room.id}><div className="management-inline-editor"><RoomEditor key={room.id} room={room} onClose={() => setEditing(null)} /></div></Disclosure></article>)}</div>
   </section>;
 }

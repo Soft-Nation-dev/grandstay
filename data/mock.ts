@@ -5,7 +5,7 @@ import type { Account, AccountPolicy } from "@/types/auth";
 import type { Room, RoomReservation } from "@/types/hotel";
 
 export const hotel = {
-  name: "GrandStay",
+  name: "Guestly",
   tagline: "Your comfort, our priority.",
   description: "A more thoughtful stay, from the moment you book to the moment you leave.",
   location: "Lagos, Nigeria",
@@ -18,7 +18,7 @@ export const hotel = {
     { title: "Track your requests", description: "Follow the progress of your service requests from received to done.", icon: "list" },
   ],
   facilities: [
-    { title: "Dining at GrandStay", image: "/images/restaurant.jpg", description: "Enjoy a relaxed dining experience in welcoming surroundings." },
+    { title: "Dining at Guestly", image: "/images/restaurant.jpg", description: "Enjoy a relaxed dining experience in welcoming surroundings." },
     { title: "Executive lounge", image: "/images/executive-lounge.jpg", description: "A comfortable space to unwind between plans." },
     { title: "Lagoon terrace pool", image: "/images/lagoon-terrace-pool.jpg", description: "Make time for a moment of relaxation." },
   ],
@@ -35,13 +35,13 @@ export const rooms: Room[] = [
 
 export const reservations: RoomReservation[] = [];
 
-export const demoPassword = "GrandStay123!";
+export const demoPassword = "Guestly123!";
 
 export const demoAccounts: Account[] = [
-  { id: "demo-guest", name: "Alex Morgan", email: "guest@grandstay.example", role: "guest", active: true },
-  { id: "demo-staff", name: "Amina Bello", email: "staff@grandstay.example", role: "staff", active: true },
-  { id: "demo-manager", name: "Tunde Adeyemi", email: "manager@grandstay.example", role: "manager", active: true },
-  { id: "demo-admin", name: "GrandStay Admin", email: "admin@grandstay.example", role: "admin", active: true },
+  { id: "demo-guest", name: "Alex Morgan", email: "guest@guestly.example", role: "guest", active: true },
+  { id: "demo-staff", name: "Amina Bello", email: "staff@guestly.example", role: "staff", active: true },
+  { id: "demo-manager", name: "Tunde Adeyemi", email: "manager@guestly.example", role: "manager", active: true },
+  { id: "demo-admin", name: "Guestly Admin", email: "admin@guestly.example", role: "admin", active: true },
 ];
 
 export const initialBookingStore: BookingStore = { bookings: [], audit: [] };
