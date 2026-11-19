@@ -1,3 +1,4 @@
+import { localDate } from "@/lib/format";
 import { documentKinds } from "@/data/mock";
 import { readManagementStore } from "@/services/management-store";
 import { getSession, getAccounts } from "@/services/auth";
@@ -20,7 +21,7 @@ function guestBooking(id: string, guestId: string) {
 }
 
 export function hotelDate(now = new Date()) {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Lagos", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+  return localDate(now);
 }
 
 export function activeStay(booking: Booking, today = hotelDate()) {
