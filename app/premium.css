@@ -145,13 +145,3 @@ button:disabled { opacity:.58; }
 @media (prefers-reduced-motion:reduce) {
   *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
 }
-
-@supports (animation-timeline:view()) {
-  @media (prefers-reduced-motion:no-preference) {
-    .home-content .content-section>.section-heading,.home-content .experience-card,.home-content .room-grid>.room-card,.home-content .facility-grid>.facility-card,.home-content>.closing-banner {
-      animation:gs-fade linear both;
-      animation-timeline:view();
-      animation-range:entry 0% entry 45%;
-    }
-  }
-}
