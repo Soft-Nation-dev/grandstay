@@ -3,7 +3,7 @@ import type { CheckIn, ServiceRequest } from "@/types/experience";
 import type { LoyaltyRule } from "@/types/management";
 import { stayNights } from "@/lib/format";
 
-export function loyaltyAwards(bookings: Booking[], checkIns: CheckIn[], rules: LoyaltyRule[], now: number) {
+export function loyaltyAwards(bookings: Booking[], checkIns: CheckIn[], rules: LoyaltyRule[], now = Date.now()) {
   return bookings.flatMap(booking => {
     const checkout = Date.parse(`${booking.checkOut}T12:00:00+01:00`);
     const checkIn = checkIns.find(item => item.bookingId === booking.id && item.status === "approved");
