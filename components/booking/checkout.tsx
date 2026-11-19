@@ -71,7 +71,7 @@ export function Checkout() {
   const loginQuery = new URLSearchParams({ next: returnPath });
   return <>
     <Link className="text-link" href={`/rooms?${bookingQuery(input)}`}><Icon name="back" /> Back to room</Link>
-    <div className="page-heading"><span className="eyebrow">Your GrandStay reservation</span><h1>Complete your booking</h1><p>Review your stay and complete your payment.</p></div>
+    <div className="page-heading"><span className="eyebrow">Your Guestly reservation</span><h1>Complete your booking</h1><p>Review your stay and complete your payment.</p></div>
     <div className="checkout-grid">
       <section className="panel checkout-panel">
         <h2>Guest details</h2>
