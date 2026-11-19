@@ -36,7 +36,7 @@ export function completeDemoPayment(input: BookingInput, reference: string, outc
     return null;
   }
   const quote = quoteBooking(input, store.bookings);
-  const booking: Booking = { ...input, id: `GS-${crypto.randomUUID().slice(0, 8).toUpperCase()}`, guestId: guest.id, guestName: guest.name, roomName: quote.room.name, nightlyRate: quote.room.nightlyRate, amount: quote.amount, currency: "NGN", status: "confirmed", paymentReference: reference, createdAt: new Date().toISOString() };
+  const booking: Booking = { ...input, id: `GY-${crypto.randomUUID().slice(0, 8).toUpperCase()}`, guestId: guest.id, guestName: guest.name, roomName: quote.room.name, nightlyRate: quote.room.nightlyRate, amount: quote.amount, currency: "NGN", status: "confirmed", paymentReference: reference, createdAt: new Date().toISOString() };
   writeBookingStore({ bookings: [...store.bookings, booking], audit: [...store.audit, started, audit(guest.id, reference, "payment_verified"), audit(guest.id, reference, "booking_confirmed")] });
   return booking;
 }
