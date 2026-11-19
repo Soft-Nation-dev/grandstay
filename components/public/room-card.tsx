@@ -1,5 +1,5 @@
 import Image from "@/components/ui/hotel-image";
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import { Icon } from "@/components/ui/icon";
 import { formatMoney } from "@/lib/format";
 import type { Room } from "@/types/hotel";
