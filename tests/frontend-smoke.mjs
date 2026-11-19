@@ -52,10 +52,10 @@ try {
   await go(`/checkout?${query}`);
   await page.getByRole("button", { name: /^Test payment/ }).click();
   await page.getByRole("button", { name: "Simulate failed payment" }).click();
-  await page.getByRole("alert").waitFor();
+  await page.getByText(/^Payment failed\./).waitFor();
   await page.getByRole("button", { name: /^Test payment/ }).click();
   await page.getByRole("button", { name: "Cancel payment", exact: true }).click();
-  await page.getByRole("alert").waitFor();
+  await page.getByText(/^Payment cancelled\./).waitFor();
   await page.getByRole("button", { name: /^Test payment/ }).click();
   await page.getByRole("button", { name: "Simulate successful payment" }).click();
   await text("Booking confirmed!");
