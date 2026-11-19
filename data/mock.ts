@@ -1,3 +1,4 @@
+import type { BookingStore } from "@/types/booking";
 import type { Account } from "@/types/auth";
 import type { Room, RoomReservation } from "@/types/hotel";
 
@@ -40,3 +41,5 @@ export const demoAccounts: Account[] = [
   { id: "demo-manager", name: "Tunde Adeyemi", email: "manager@grandstay.example", role: "manager" },
   { id: "demo-admin", name: "GrandStay Admin", email: "admin@grandstay.example", role: "admin" },
 ];
+
+export const initialBookingStore: BookingStore = { bookings: [], audit: [] };
