@@ -1,3 +1,4 @@
+import type { ManagementStore } from "@/types/management";
 import type { DocumentKind, ExperienceStore } from "@/types/experience";
 import type { BookingStore } from "@/types/booking";
 import type { Account } from "@/types/auth";
@@ -56,3 +57,11 @@ export const serviceCategories = [
   { name: "Technical support", description: "Get assistance with room equipment." },
   { name: "Other assistance", description: "Let the team know how they can help." },
 ];
+
+export const roomImages = rooms.map(room => room.image);
+
+export const initialManagementStore: ManagementStore = {
+  rooms,
+  services: serviceCategories.map((service, index) => ({ ...service, id: `service-${index + 1}`, active: true })),
+  loyaltyRules: [{ pointsPerNight: 10, effectiveAt: "1970-01-01T00:00:00.000Z" }],
+};
