@@ -6,5 +6,5 @@ import { AuthShell } from "@/components/auth/auth-shell";
 export const metadata: Metadata = { title: "Sign in" };
 
 export default function LoginPage() {
-  return <AuthShell title="Welcome back" description="Sign in to continue your GrandStay experience."><Suspense fallback={<p role="status">Loading sign in…</p>}><AuthForm /></Suspense></AuthShell>;
+  return <AuthShell title="Welcome back" description="Sign in to continue your Guestly experience."><Suspense fallback={<p role="status">Loading sign in…</p>}><AuthForm /></Suspense></AuthShell>;
 }
