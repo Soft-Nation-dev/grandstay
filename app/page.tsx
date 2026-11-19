@@ -11,12 +11,12 @@ export default function Home() {
     <div className="shell home-content">
       <section className="hero">
         <div className="hero-copy">
-          <span className="hero-label"><Icon name="hotel" /> Welcome to GrandStay</span>
+          <span className="hero-label"><Icon name="hotel" /> Welcome to Guestly</span>
           <h1>{hotel.tagline}</h1>
           <p>{hotel.description} Discover thoughtfully designed rooms, easier check-in and a concierge ready to assist.</p>
           <span className="hero-location"><Icon name="location" /> {hotel.location}</span>
         </div>
-        <div className="hero-image"><Image src={hotel.heroImage} alt="Warmly furnished GrandStay executive suite" fill sizes="(max-width: 760px) 100vw, 55vw" priority /></div>
+        <div className="hero-image"><Image src={hotel.heroImage} alt="Warmly furnished Guestly executive suite" fill sizes="(max-width: 760px) 100vw, 55vw" priority /></div>
       </section>
       <section className="panel reserve-panel" id="reserve" aria-labelledby="reserve-title">
         <div className="section-heading"><div><span className="eyebrow">Make yourself at home</span><h2 id="reserve-title">Reserve your stay</h2><p>Choose your dates and find a room that suits you.</p></div></div>
@@ -35,10 +35,10 @@ export default function Home() {
         <FeaturedRooms />
       </section>
       <section className="content-section">
-        <div className="section-heading"><div><span className="eyebrow">More than a room</span><h2>Explore GrandStay</h2><p>Discover spaces to dine, relax and recharge.</p></div></div>
+        <div className="section-heading"><div><span className="eyebrow">More than a room</span><h2>Explore Guestly</h2><p>Discover spaces to dine, relax and recharge.</p></div></div>
         <div className="facility-grid">{hotel.facilities.map((facility) => <article className="facility-card" key={facility.title}><div className="facility-image"><Image src={facility.image} alt={facility.title} fill sizes="(max-width: 640px) 100vw, 33vw" /></div><div><h3>{facility.title}</h3><p>{facility.description}</p></div></article>)}</div>
       </section>
-      <section className="closing-banner"><div><h2>Make your next stay a GrandStay.</h2><p>Find the room that feels right for you.</p></div><Link className="button button-white" href="/rooms">Explore rooms <Icon name="arrow" /></Link></section>
+      <section className="closing-banner"><div><h2>Make your next stay memorable.</h2><p>Find the room that feels right for you.</p></div><Link className="button button-white" href="/rooms">Explore rooms <Icon name="arrow" /></Link></section>
     </div>
   </SiteShell>;
 }
