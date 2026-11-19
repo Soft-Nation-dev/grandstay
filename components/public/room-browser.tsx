@@ -7,11 +7,12 @@ import { useState } from "react";
 import { Icon } from "@/components/ui/icon";
 import { RoomCard } from "@/components/public/room-card";
 import { StaySearch } from "@/components/public/stay-search";
+import { useManagement } from "@/hooks/use-management";
 import { useBookingStore } from "@/hooks/use-bookings";
 import { bookingQuery, readStay } from "@/lib/booking-query";
 import type { Booking } from "@/types/booking";
 import { formatMoney, localDate, stayNights } from "@/lib/format";
-import { availableInventory, findRooms, getRoom, getRooms } from "@/services/rooms";
+import { availableInventory, findRooms, getRoom } from "@/services/rooms";
 import type { Room, StaySearch as Search } from "@/types/hotel";
 
 const categories = ["All", "Standard", "Deluxe", "Executive"] as const;
@@ -46,6 +47,7 @@ function RoomDetail({ room, stay, back, bookings }: { room: Room; stay?: Search;
 export function RoomBrowser() {
   const params = useSearchParams();
   const { bookings } = useBookingStore();
+  const { rooms } = useManagement();
   const [category, setCategory] = useState<(typeof categories)[number]>("All");
   const [sort, setSort] = useState("recommended");
   const checkIn = params.get("checkIn") ?? "";
@@ -58,10 +60,10 @@ export function RoomBrowser() {
   if (stay) Object.entries(stay).forEach(([key, value]) => query.set(key, String(value)));
   const queryString = query.toString();
   const back = queryString ? `/rooms?${queryString}` : "/rooms";
-  const room = roomId ? getRoom(roomId) : undefined;
+  const room = roomId ? getRoom(roomId, rooms) : undefined;
   if (room) return <RoomDetail room={room} stay={stay} back={back} bookings={bookings} />;
 
-  const matches = (stay ? findRooms(stay, bookings) : getRooms()).filter((item) => category === "All" || item.category === category);
+  const matches = (stay ? findRooms(stay, bookings, rooms) : rooms).filter((item) => category === "All" || item.category === category);
   const results = [...matches].sort((a, b) => sort === "price-low" ? a.nightlyRate - b.nightlyRate : sort === "price-high" ? b.nightlyRate - a.nightlyRate : 0);
   return <>
     <div className="page-heading"><span className="eyebrow">Stay at GrandStay</span><h1>Rooms &amp; suites</h1><p>Find a space to make your own, with the comforts that matter most.</p></div>

@@ -3,6 +3,7 @@ import { readBookingStore, writeBookingStore } from "@/services/booking-store";
 import { availableInventory, getRoom } from "@/services/rooms";
 import { localDate, stayNights } from "@/lib/format";
 import { bookingQuery, readStay } from "@/lib/booking-query";
+import type { Room } from "@/types/hotel";
 import type { Booking, BookingAudit, BookingInput, PaymentOutcome } from "@/types/booking";
 
 function requireGuest() {
@@ -11,9 +12,9 @@ function requireGuest() {
   return account;
 }
 
-export function quoteBooking(input: BookingInput, bookings: Booking[]) {
+export function quoteBooking(input: BookingInput, bookings: Booking[], rooms?: Room[]) {
   const stay = readStay(new URLSearchParams(bookingQuery(input)));
-  const room = getRoom(input.roomId);
+  const room = getRoom(input.roomId, rooms);
   if (!stay || !room || input.checkIn < localDate() || input.guests > room.capacity || !availableInventory(room, input, bookings)) throw new Error("This room is not available for the selected stay. Please review your dates.");
   const nights = stayNights(input.checkIn, input.checkOut);
   return { room, nights, amount: room.nightlyRate * nights };

@@ -1,11 +1,12 @@
-import { reservations, rooms } from "@/data/mock";
+import { reservations } from "@/data/mock";
+import { readManagementStore } from "@/services/management-store";
 import { stayNights } from "@/lib/format";
 import type { Room, StaySearch, RoomReservation } from "@/types/hotel";
 import type { Booking } from "@/types/booking";
 
-export const getRooms = () => rooms;
-export const getFeaturedRooms = () => rooms.filter((room) => room.featured);
-export const getRoom = (id: string) => rooms.find((room) => room.id === id);
+export const getRooms = () => readManagementStore().rooms;
+export const getFeaturedRooms = (rooms = getRooms()) => rooms.filter(room => room.featured && room.inventory > 0);
+export const getRoom = (id: string, rooms = getRooms()) => rooms.find((room) => room.id === id);
 
 export function availableInventory(room: Room, stay: StaySearch, bookings: Booking[] = []) {
   if (!stayNights(stay.checkIn, stay.checkOut)) return 0;
@@ -21,6 +22,6 @@ export function availableInventory(room: Room, stay: StaySearch, bookings: Booki
   return Math.max(0, room.inventory - peak);
 }
 
-export function findRooms(stay: StaySearch, bookings: Booking[] = []) {
+export function findRooms(stay: StaySearch, bookings: Booking[] = [], rooms = getRooms()) {
   return rooms.filter(room => room.capacity >= stay.guests && availableInventory(room, stay, bookings) > 0);
 }

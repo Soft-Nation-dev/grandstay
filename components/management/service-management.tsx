@@ -1,0 +1,39 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { useManagement } from "@/hooks/use-management";
+import { useExperience } from "@/hooks/use-experience";
+import { saveService } from "@/services/management";
+import { serviceMetrics } from "@/lib/management";
+import { Icon } from "@/components/ui/icon";
+import type { ServiceCategory } from "@/types/management";
+
+function ServiceEditor({ service, close }: { service?: ServiceCategory; close: () => void }) {
+  const [error, setError] = useState("");
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const values = new FormData(event.currentTarget);
+    try {
+      saveService({ name: String(values.get("name")), description: String(values.get("description")), active: values.has("active") }, service?.id);
+      close();
+    } catch (error) { setError(error instanceof Error ? error.message : "Unable to save service."); }
+  }
+  return <form className="panel experience-form" onSubmit={submit}><div className="staff-section-heading"><h2>{service ? "Edit service" : "Add service"}</h2><button type="button" className="text-link" onClick={close}>Cancel</button></div><label className="auth-field"><span>Service name</span><input name="name" required maxLength={60} defaultValue={service?.name} /></label><label className="auth-field"><span>Description</span><textarea name="description" required maxLength={300} defaultValue={service?.description} /></label><label className="management-check"><input name="active" type="checkbox" defaultChecked={service?.active ?? true} /> Available for guest requests</label>{error && <p className="auth-error" role="alert">{error}</p>}<button className="button button-primary" type="submit">Save service</button></form>;
+}
+
+export function ServiceManagement() {
+  const { services } = useManagement();
+  const { requests } = useExperience();
+  const metrics = serviceMetrics(requests);
+  const [editing, setEditing] = useState<string | null>(null);
+  const categories = [...new Set([...services.map(item => item.name), ...requests.map(item => item.category)])];
+  return <section className="workspace-section">
+    <div><span className="eyebrow">Hotel performance</span><h2>Services &amp; performance</h2><p className="muted">Monitor service delivery and manage the request catalogue.</p></div>
+    <div className="staff-metrics">{[{ title: "Total requests", value: metrics.total }, { title: "Completed", value: metrics.done }, { title: "Completion rate", value: metrics.completion === null ? "—" : `${metrics.completion}%` }, { title: "Avg. completion time", value: metrics.averageMinutes === null ? "—" : `${metrics.averageMinutes}m` }].map(item => <div className="panel staff-metric" key={item.title}><div>{item.title}</div><strong>{item.value}</strong></div>)}</div>
+    <section className="panel management-panel"><h3>Performance by service</h3>{categories.map(name => { const stats = serviceMetrics(requests.filter(item => item.category === name)); return <div className="management-stat" key={name}><div><strong>{name}</strong><p className="muted">{stats.received} received · {stats.inProgress} in progress</p></div><span>{stats.done}/{stats.total} done</span></div>; })}</section>
+    <div className="staff-snapshot-heading"><h2>Service catalogue</h2><button className="button button-primary" onClick={() => setEditing("new")}>Add service <Icon name="arrow" /></button></div>
+    {editing !== null && <ServiceEditor key={editing} service={services.find(item => item.id === editing)} close={() => setEditing(null)} />}
+    <div className="workspace-grid">{services.map(item => <article className="panel management-panel" key={item.id}><div className="booking-card-heading"><h3>{item.name}</h3><span className={`experience-status ${item.active ? "status-approved" : "status-pending"}`}>{item.active ? "Available" : "Unavailable"}</span></div><p className="muted">{item.description}</p><button className="button button-soft" onClick={() => setEditing(item.id)}>Edit service</button></article>)}</div>
+    <p className="auth-disclaimer"><Icon name="info" />The catalogue controls request availability only; service payments are not enabled. Historical requests retain their original category names.</p>
+  </section>;
+}
