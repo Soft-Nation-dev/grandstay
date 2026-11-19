@@ -1,10 +1,12 @@
 export type Role = "guest" | "staff" | "manager" | "admin";
+export type TeamRole = Extract<Role, "staff" | "manager">;
 
 export type Account = {
   id: string;
   name: string;
   email: string;
   role: Role;
+  active: boolean;
 };
 
 export type Credentials = {
@@ -17,8 +19,11 @@ export type Registration = Credentials & {
 };
 
 export type TeamRegistration = Registration & {
-  role: "staff" | "manager";
+  role: TeamRole;
 };
+
+export type TeamAccess = { role: TeamRole; active: boolean };
+export type AccountPolicy = TeamAccess & { revision: string };
 
 export const roleLabels: Record<Role, string> = {
   guest: "Guest",
