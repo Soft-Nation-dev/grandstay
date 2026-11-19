@@ -89,8 +89,9 @@ try {
   await page.getByRole("link", { name: "View room" }).first().click();
   await page.getByRole("heading", { name: "Standard Cozy Haven", level: 1 }).waitFor();
   await atTop(page);
-  await page.getByLabel("Check-in", { exact: true }).fill(checkIn);
-  await page.getByLabel("Check-out", { exact: true }).fill(checkOut);
+  const bookingForm = page.locator(".detail-booking:visible");
+  await bookingForm.getByLabel("Check-in", { exact: true }).fill(checkIn);
+  await bookingForm.getByLabel("Check-out", { exact: true }).fill(checkOut);
   const availability = page.getByRole("button", { name: "Check availability" });
   await staysInPlace(page, availability, async () => {
     await availability.click();
