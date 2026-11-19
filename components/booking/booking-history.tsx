@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "@/components/navigation/app-link";
+import { RecordedBookings } from "@/components/dataset/recorded-bookings";
+import { datasetGuestId } from "@/services/hotel-dataset";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useExperience } from "@/hooks/use-experience";
@@ -35,6 +37,7 @@ export function BookingHistory() {
   const [search, setSearch] = useState("");
   if (!account) return null;
   const isGuest = account.role === "guest";
+  const importedGuest = isGuest ? datasetGuestId(account.id) : undefined;
   const isManager = account.role === "manager";
   const staff = account.role === "staff";
   const today = hotelDate();
@@ -51,6 +54,7 @@ export function BookingHistory() {
     {staff && <div className="panel staff-filter-panel"><div className="filter-tabs" aria-label="Reservation filters">{["all", "today", "upcoming", "current", "past"].map(item => <Link className={!focus && view === item ? "filter-active" : ""} aria-current={!focus && view === item ? "true" : undefined} href={item === "all" ? "/staff/bookings" : `/staff/bookings?view=${item}`} key={item}>{item === "all" ? "All" : item === "today" ? "Today" : item === "upcoming" ? "Upcoming" : item === "current" ? "Current stays" : "Past"}</Link>)}</div><label className="auth-field"><span>Search reservations</span><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Guest, room or booking reference" /></label>{focus && <Link className="text-link" href="/staff/bookings">Clear selected reservation</Link>}</div>}
     {isManager && <div className="panel booking-total"><span>Total payments</span><strong>{formatMoney(visible.reduce((sum, booking) => sum + booking.amount, 0))}</strong></div>}
     {visible.length ? <div className="workspace-grid">{visible.map(booking => <BookingCard key={booking.id} booking={booking} showGuest={!isGuest} staff={staff} />)}</div> : <div className="panel empty-state"><Icon name="calendar" width={32} height={32} /><h3>{staff ? "No matching reservations" : "No confirmed bookings yet"}</h3><p>{staff ? "Change the filter or search to see other reservations." : "Bookings will appear here after a successful payment."}</p>{isGuest && <Link href="/rooms" className="button button-primary">Find a room</Link>}</div>}
+    {(isManager || (staff && view === "all" && !focus) || importedGuest) && <RecordedBookings guestId={importedGuest} manager={isManager} />}
     {isManager && <section className="panel team-panel"><h2>Booking &amp; payment activity</h2><div className="audit-list">{audit.length ? [...audit].reverse().map(item => <div key={item.id}><strong>{item.event.replaceAll("_", " ")}</strong><span>{new Date(item.createdAt).toISOString().replace("T", " ").slice(0, 19)} UTC</span><small>{item.reference}</small></div>) : <p className="muted">No payment activity yet.</p>}</div></section>}
   </section>;
 }

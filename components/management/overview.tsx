@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "@/components/navigation/app-link";
+import { DatasetOverview } from "@/components/dataset/overview";
 import { useBookingStore } from "@/hooks/use-bookings";
 import { useExperience } from "@/hooks/use-experience";
 import { useManagement } from "@/hooks/use-management";
@@ -33,7 +34,8 @@ export function ManagerOverview() {
   });
   const maximum = Math.max(1, ...days.map(item => item.total));
   return <div className="staff-overview">
-    <div className="staff-snapshot-heading"><div><span className="eyebrow">Hotel management</span><h2>Performance overview</h2></div><span className="staff-date"><Icon name="calendar" />{today} · WAT</span></div>
+    <DatasetOverview />
+    <div className="staff-snapshot-heading"><div><span className="eyebrow">Hotel management</span><h2>Current operations</h2></div><span className="staff-date"><Icon name="calendar" />{today} · WAT</span></div>
     <div className="staff-metrics">{metrics.map(item => <Link className="panel staff-metric" href={item.href} key={item.title}><div><span>{item.title}</span><Icon name={item.icon} /></div><strong className="manager-metric-value">{item.value}</strong><small>{item.hint}</small></Link>)}</div>
     <div className="staff-operations-grid">
       <section className="panel management-panel"><div className="staff-section-heading"><h2>Revenue · last 7 days</h2><Link className="text-link" href="/manager/bookings">Payments <Icon name="arrow" /></Link></div><div className="revenue-chart" aria-label="Revenue by booking date">{days.map(item => <div key={item.day} aria-label={`${item.day}: ${formatMoney(item.total)}, ${item.count} bookings`} title={`${item.day}: ${formatMoney(item.total)}`}><span>{item.count}</span><div className="revenue-track"><div style={{ height: `${item.total / maximum * 100}%` }} /></div><small>{item.day.slice(5)}</small></div>)}</div><p className="muted">Bars show payment amounts by booking date; labels show booking counts.</p></section>
