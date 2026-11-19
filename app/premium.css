@@ -99,14 +99,12 @@ button:disabled { opacity:.58; }
 }
 
 @media (prefers-reduced-motion:no-preference) {
-  .hero-copy>*,.auth-visual-copy,.page-heading,.experience-heading>div { animation:gs-enter 420ms var(--ease-out) both; }
+  .hero-copy>* { animation:gs-enter 420ms var(--ease-out) both; }
   .hero-copy>h1 { animation-delay:45ms; }
   .hero-copy>p { animation-delay:85ms; }
   .hero-copy>.hero-location { animation-delay:125ms; }
   .hero-image>img,.auth-visual>img,.detail-photo>img { animation:gs-image 620ms var(--ease-out) both; }
-  .auth-content,.dashboard-welcome,.guest-stay,.room-card,.facility-card,.checkout-summary,.confirmation-panel,.availability-result,.auth-notice[role="status"],.auth-error[role="alert"],.management-inline-editor,.admin-access-editor { animation:gs-fade 260ms var(--ease-out) both; }
-  .room-grid>.room-card:nth-child(2),.facility-grid>.facility-card:nth-child(2) { animation-delay:35ms; }
-  .room-grid>.room-card:nth-child(3),.facility-grid>.facility-card:nth-child(3) { animation-delay:70ms; }
+  .availability-result,.auth-notice[role="status"],.auth-error[role="alert"],.management-inline-editor,.admin-access-editor { animation:gs-fade 260ms var(--ease-out) both; }
   .confirmation-icon,.timeline-reached .timeline-dot { animation:gs-confirm 350ms var(--ease-out) both; }
   .message:last-of-type { animation:gs-fade 160ms var(--ease-out) both; }
   .dataset-track span { transform-origin:left; animation:gs-bar-x 480ms var(--ease-out) both; }
@@ -146,12 +144,19 @@ button:disabled { opacity:.58; }
   *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
 }
 
-@supports (animation-timeline:view()) {
-  @media (prefers-reduced-motion:no-preference) {
-    .home-content .content-section>.section-heading,.home-content .experience-card,.home-content .room-grid>.room-card,.home-content .facility-grid>.facility-card,.home-content>.closing-banner {
-      animation:gs-fade linear both;
-      animation-timeline:view();
-      animation-range:entry 0% entry 45%;
-    }
-  }
+
+@keyframes gs-reveal {
+  from { opacity:.22; transform:translateY(14px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+@media (prefers-reduced-motion:no-preference) {
+  [data-gs-reveal="shown"] { animation:gs-reveal 520ms var(--ease-out); }
+}
+
+@media (max-width:760px) {
+  .experience-grid,.staff-facilities .facility-grid,.dataset-record-grid { grid-template-columns:minmax(0,1fr); }
+  .experience-card { grid-template-columns:auto minmax(0,1fr); align-items:start; column-gap:14px; row-gap:5px; padding:18px; }
+  .experience-card .feature-icon { grid-row:1 / span 2; }
+  .experience-card h3,.experience-card p { grid-column:2; }
 }
