@@ -8,7 +8,7 @@ import { checkoutReturn } from "@/lib/booking-query";
 import { demoAccounts, demoPassword } from "@/data/mock";
 import { Icon } from "@/components/ui/icon";
 import { PasswordField } from "@/components/auth/password-field";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth, useAccounts } from "@/hooks/use-auth";
 import { registerGuest, signIn, signOut } from "@/services/auth";
 import { roleLabels, roleRoutes } from "@/types/auth";
 
@@ -18,6 +18,8 @@ export function AuthForm({ register = false }: { register?: boolean }) {
   const next = checkoutReturn(params.get("next"));
   const nextQuery = next ? `?${new URLSearchParams({ next })}` : "";
   const account = useAuth();
+  const accounts = useAccounts();
+  const demos = demoAccounts.map(demo => accounts.find(item => item.id === demo.id) ?? demo);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function authenticate(action: () => ReturnType<typeof signIn>) {
@@ -60,7 +62,7 @@ export function AuthForm({ register = false }: { register?: boolean }) {
     <p className="auth-switch">{register ? "Already have an account?" : "New to GrandStay?"} <Link href={`${register ? "/login" : "/register"}${nextQuery}`}>{register ? "Sign in" : "Create guest account"}</Link></p>
     {!register && <section className="demo-section">
       <h3>Explore the demo</h3><p>Choose a role to sign in with a sample account.</p>
-      <div className="demo-grid">{demoAccounts.map(user => <button className="demo-role" key={user.id} disabled={busy || account === undefined} onClick={() => void authenticate(() => signIn({ email: user.email, password: demoPassword }))}><Icon name={user.role === "guest" ? "user" : user.role === "staff" ? "people" : user.role === "manager" ? "chart" : "shield"} />{roleLabels[user.role]}</button>)}</div>
+      <div className="demo-grid">{demos.map(user => <button className="demo-role" key={user.id} disabled={busy || account === undefined || !user.active} onClick={() => void authenticate(() => signIn({ email: user.email, password: demoPassword }))}><Icon name={user.role === "guest" ? "user" : user.role === "staff" ? "people" : user.role === "manager" ? "chart" : "shield"} /><span>{roleLabels[user.role]}<small>{user.active ? user.name : "Inactive"}</small></span></button>)}</div>
     </section>}
     <p className="auth-disclaimer"><Icon name="info" />Frontend preview only. Do not enter real credentials or personal information.</p>
   </div>;
