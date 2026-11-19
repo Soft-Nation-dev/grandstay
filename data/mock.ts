@@ -1,3 +1,4 @@
+import type { Account } from "@/types/auth";
 import type { Room, RoomReservation } from "@/types/hotel";
 
 export const hotel = {
@@ -30,3 +31,12 @@ export const rooms: Room[] = [
 ];
 
 export const reservations: RoomReservation[] = [];
+
+export const demoPassword = "GrandStay123!";
+
+export const demoAccounts: Account[] = [
+  { id: "demo-guest", name: "Alex Morgan", email: "guest@grandstay.example", role: "guest" },
+  { id: "demo-staff", name: "Amina Bello", email: "staff@grandstay.example", role: "staff" },
+  { id: "demo-manager", name: "Tunde Adeyemi", email: "manager@grandstay.example", role: "manager" },
+  { id: "demo-admin", name: "GrandStay Admin", email: "admin@grandstay.example", role: "admin" },
+];
