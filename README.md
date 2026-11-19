@@ -1,43 +1,51 @@
 # GrandStay
 
-A mobile-first guest experience platform for a single hotel, with guest, staff, manager and super-admin workspaces.
+GrandStay is a hotel guest experience platform built as part of a team project. The idea is to make a hotel stay easier, from finding a room and making a reservation to checking in, requesting services and talking to the concierge.
 
-## Run locally
+The frontend also gives hotel staff, managers and super admins their own workspaces to handle the day-to-day operations behind the guest experience.
+
+## Try it out
+
+[Open GrandStay](https://soft-nation-dev.github.io/grandstay/)
+
+You can browse rooms without an account. To explore the dashboards, head to the sign-in page and choose one of the four preview accounts.
+
+## Running the project locally
+
+Make sure Node.js is installed, then clone the repository and run:
 
 ```bash
+git clone https://github.com/Soft-Nation-dev/grandstay.git
+cd grandstay
 npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. Choose a preview account on the sign-in page to explore the role you need.
+Open http://localhost:3000 in your browser.
 
-## Project structure
+## How the project is organized
 
-- `app/` — public pages and role routes
-- `components/` — shared UI and feature components
-- `types/` — application data contracts
-- `data/mock.ts` — initial example records
-- `services/` — application operations and local persistence
-- `hooks/` — subscribed client state
-- `lib/` — formatting, rules and supporting calculations
-- `public/images/` — hotel image assets
-- `tests/` — browser smoke checks
+- `app/` contains the pages and routes.
+- `components/` contains reusable interface elements and feature screens.
+- `data/mock.ts` holds the starting sample data.
+- `services/` and `hooks/` handle data access and updates.
+- `types/` and `lib/` hold shared data definitions and application logic.
+- `public/images/` contains the hotel photographs and design assets.
+- `tests/` contains the automated browser checks.
 
-## Validate changes
+## Where we are now
+
+The frontend is ready for the team to explore and integrate. For now, accounts, reservations and other records are kept in the browser. Payment, identity review and room access are simulated, so please use fictional details.
+
+When the backend is ready, we can connect it through the existing services and hooks instead of rebuilding the pages. Real authentication, permissions, room availability, payment verification, private document storage and shared records will need to be handled by the backend.
+
+## Checking and deploying changes
 
 ```bash
 npm run lint
 npm run build
 ```
 
-GitHub Actions also runs browser smoke checks against a production build.
+GitHub Actions runs the frontend checks and prepares a static GitHub Pages build. GitHub Pages hosts the frontend only; a live backend will need its own hosting. The normal Next.js development setup is kept separate from the static build.
 
-## Backend handover
-
-The current frontend is a demonstration. Use fictional account details. The local stores are not a production database, and test payments and sample identity submissions are not genuine transactions or verification.
-
-Connect real authentication and permission checks first, followed by room inventory, reservations and Paystack verification. Then connect private ID uploads, staff reviews, room access, service requests, concierge messaging and management data.
-
-Replace local service/store implementations and their hooks with server-backed operations. Preserve the UI components and adapt the TypeScript contracts to the agreed API. Remove the preview-account shortcuts, test-payment and identity-sample controls, and the consolidated dashboard explanation before production launch.
-
-The hotel team provides approved content, room prices and inventory, service information and loyalty policy. Backend authorization, payment verification, private storage and audit records must remain server-controlled.
+Built with Next.js, React, TypeScript and Tailwind CSS.

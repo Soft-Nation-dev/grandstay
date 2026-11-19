@@ -13,6 +13,6 @@ const links: { href: string; title: string; icon: IconName }[] = [
 ];
 
 export function StaffNavigation() {
-  const pathname = usePathname();
+  const pathname = usePathname().replace(/\/$/, "") || "/";
   return <nav className="staff-navigation" aria-label="Staff navigation">{links.map(item => <Link href={item.href} key={item.href} aria-current={pathname === item.href ? "page" : undefined}><Icon name={item.icon} /><span>{item.title}</span></Link>)}</nav>;
 }

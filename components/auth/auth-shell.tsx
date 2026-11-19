@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/ui/hotel-image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Brand } from "@/components/layout/site-shell";

@@ -15,7 +15,7 @@ import { roleLabels, roleRoutes } from "@/types/auth";
 export function DashboardShell({ children }: { children: ReactNode }) {
   const account = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname().replace(/\/$/, "") || "/";
   if (!account) return null;
   function logout() {
     signOut();

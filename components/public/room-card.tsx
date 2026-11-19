@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/ui/hotel-image";
 import Link from "next/link";
 import { Icon } from "@/components/ui/icon";
 import { formatMoney } from "@/lib/format";

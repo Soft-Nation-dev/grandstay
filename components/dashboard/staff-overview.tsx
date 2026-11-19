@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/ui/hotel-image";
 import type { ReactNode } from "react";
 import { hotel } from "@/data/mock";
 import { useAccounts } from "@/hooks/use-auth";

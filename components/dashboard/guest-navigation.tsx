@@ -15,6 +15,6 @@ const links: { href: string; title: string; icon: IconName }[] = [
 ];
 
 export function GuestNavigation() {
-  const pathname = usePathname();
+  const pathname = usePathname().replace(/\/$/, "") || "/";
   return <nav className="staff-navigation" aria-label="Guest navigation">{links.map(item => <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined}><Icon name={item.icon} /><span>{item.title}</span></Link>)}</nav>;
 }
