@@ -7,15 +7,18 @@ import { useState } from "react";
 import { Icon } from "@/components/ui/icon";
 import { RoomCard } from "@/components/public/room-card";
 import { StaySearch } from "@/components/public/stay-search";
-import { formatMoney, stayNights } from "@/lib/format";
+import { useBookingStore } from "@/hooks/use-bookings";
+import { bookingQuery, readStay } from "@/lib/booking-query";
+import type { Booking } from "@/types/booking";
+import { formatMoney, localDate, stayNights } from "@/lib/format";
 import { availableInventory, findRooms, getRoom, getRooms } from "@/services/rooms";
 import type { Room, StaySearch as Search } from "@/types/hotel";
 
 const categories = ["All", "Standard", "Deluxe", "Executive"] as const;
 
-function RoomDetail({ room, stay, back }: { room: Room; stay?: Search; back: string }) {
+function RoomDetail({ room, stay, back, bookings }: { room: Room; stay?: Search; back: string; bookings: Booking[] }) {
   const nights = stay ? stayNights(stay.checkIn, stay.checkOut) : 0;
-  const available = stay && stay.guests <= room.capacity && availableInventory(room, stay) > 0;
+  const available = stay && stay.checkIn >= localDate() && stay.guests <= room.capacity && availableInventory(room, stay, bookings) > 0;
 
   return <div className="detail-page">
     <Link className="text-link" href={back}><Icon name="back" /> All rooms</Link>
@@ -32,9 +35,9 @@ function RoomDetail({ room, stay, back }: { room: Room; stay?: Search; back: str
         <span className="eyebrow">Plan your stay</span><h2><span className="price">{formatMoney(room.nightlyRate)}</span> <small>/ night</small></h2>
         <StaySearch key={JSON.stringify(stay)} initial={stay} roomId={room.id} />
         {stay && <div className="availability-result" role="status">{available ?
-          <><span className="availability-label"><Icon name="check" /> Available in demo inventory</span><div className="estimate"><span>{nights} {nights === 1 ? "night" : "nights"}</span><strong>{formatMoney(room.nightlyRate * nights)}</strong></div></> :
+          <><span className="availability-label"><Icon name="check" /> Available in demo inventory</span><div className="estimate"><span>{nights} {nights === 1 ? "night" : "nights"}</span><strong>{formatMoney(room.nightlyRate * nights)}</strong></div><Link className="button button-primary" href={`/checkout?${bookingQuery({ ...stay, roomId: room.id })}`}>Reserve room <Icon name="arrow" /></Link></> :
           <p className="form-error">This room does not accommodate your selected stay. Try other dates or fewer guests.</p>}</div>}
-        <p className="preview-note"><Icon name="info" /> This preview uses sample room data. Reservation checkout will be available in the booking milestone.</p>
+        <p className="preview-note"><Icon name="info" /> This preview uses sample room data. Payments are simulated; no real money will be charged.</p>
       </aside>
     </div>
   </div>;
@@ -42,23 +45,23 @@ function RoomDetail({ room, stay, back }: { room: Room; stay?: Search; back: str
 
 export function RoomBrowser() {
   const params = useSearchParams();
+  const { bookings } = useBookingStore();
   const [category, setCategory] = useState<(typeof categories)[number]>("All");
   const [sort, setSort] = useState("recommended");
   const checkIn = params.get("checkIn") ?? "";
   const checkOut = params.get("checkOut") ?? "";
-  const guests = Number(params.get("guests") ?? 2);
   const nights = stayNights(checkIn, checkOut);
-  const hasDates = /^\d{4}-\d{2}-\d{2}$/.test(checkIn) && /^\d{4}-\d{2}-\d{2}$/.test(checkOut);
-  const stay = hasDates && nights && Number.isInteger(guests) && guests >= 1 && guests <= 3 ? { checkIn, checkOut, guests } : undefined;
+  const requestedStay = readStay(params);
+  const stay = requestedStay && requestedStay.checkIn >= localDate() ? requestedStay : undefined;
   const roomId = params.get("room");
   const query = new URLSearchParams();
   if (stay) Object.entries(stay).forEach(([key, value]) => query.set(key, String(value)));
   const queryString = query.toString();
   const back = queryString ? `/rooms?${queryString}` : "/rooms";
   const room = roomId ? getRoom(roomId) : undefined;
-  if (room) return <RoomDetail room={room} stay={stay} back={back} />;
+  if (room) return <RoomDetail room={room} stay={stay} back={back} bookings={bookings} />;
 
-  const matches = (stay ? findRooms(stay) : getRooms()).filter((item) => category === "All" || item.category === category);
+  const matches = (stay ? findRooms(stay, bookings) : getRooms()).filter((item) => category === "All" || item.category === category);
   const results = [...matches].sort((a, b) => sort === "price-low" ? a.nightlyRate - b.nightlyRate : sort === "price-high" ? b.nightlyRate - a.nightlyRate : 0);
   return <>
     <div className="page-heading"><span className="eyebrow">Stay at GrandStay</span><h1>Rooms &amp; suites</h1><p>Find a space to make your own, with the comforts that matter most.</p></div>
