@@ -35,10 +35,9 @@ function ProvisionForm() {
     <div><span className="eyebrow">Account provisioning</span><h2>Create team account</h2><p className="muted">Create access for a staff member or manager.</p></div>
     <form className="auth-form-stack" onSubmit={submit} aria-busy={busy}>
       <label className="auth-field"><span>Full name</span><input name="name" minLength={2} maxLength={100} required /></label>
-      <label className="auth-field"><span>Demo email address</span><input name="email" type="email" maxLength={254} required /></label>
+      <label className="auth-field"><span>Sample email address</span><input name="email" type="email" maxLength={254} required /></label>
       <label className="auth-field"><span>Role</span><select name="role"><option value="staff">Staff</option><option value="manager">Manager</option></select></label>
-      <PasswordField label="Demo password" autoComplete="new-password" minLength={8} />
-      <p className="field-hint">Use fictional details only. No invitations or emails are sent.</p>
+      <PasswordField label="Password" autoComplete="new-password" minLength={8} />
       {error && <p className="auth-error" role="alert">{error}</p>}
       {success && <p className="auth-notice" role="status"><Icon name="check" />{success}</p>}
       <button className="button button-primary" type="submit" disabled={busy}>{busy ? "Creating…" : "Create account"}</button>
@@ -68,7 +67,7 @@ function AccessEditor({ account, close, saved }: { account: Account; close: () =
       <label className="auth-field"><span>Access role</span><select value={role} onChange={event => setRole(event.target.value as TeamRole)}><option value="staff">Staff</option><option value="manager">Manager</option></select></label>
       <label className="auth-field"><span>Account status</span><select value={active ? "active" : "inactive"} onChange={event => setActive(event.target.value === "active")}><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
     </div>
-    <p className="muted">Saving a change ends existing demo sessions for this account. Inactive accounts cannot sign in.</p>
+    <p className="muted">Saving a change ends existing sessions for this account. Inactive accounts cannot sign in.</p>
     {error && <p className="auth-error" role="alert">{error}</p>}
     <div className="experience-actions"><button className="button button-primary" type="submit" disabled={!changed}>Save changes</button><button className="button button-soft" type="button" onClick={close}>Cancel</button></div>
   </form>;
