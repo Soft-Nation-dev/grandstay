@@ -96,6 +96,8 @@ const query = new URLSearchParams({ room: "standard-cozy-haven", checkIn, checkO
 try {
   await go("/");
   await fit(page);
+  await page.getByRole("link", { name: "Guestly home" }).first().waitFor();
+  assert.match(await page.title(), /Guestly/);
   assert.equal(await page.locator(".hero-copy h1").evaluate(node => getComputedStyle(node).animationName), "gs-enter");
   await page.emulateMedia({ reducedMotion: "reduce" });
   assert.equal(await page.locator(".hero-copy h1").evaluate(node => getComputedStyle(node).animationName), "none");
@@ -111,6 +113,7 @@ try {
   await go("/");
   const mobileNav = page.getByRole("navigation", { name: "Mobile navigation" });
   await scrollDown(page);
+  await page.waitForFunction(() => { const bar = document.querySelector(".motion-progress"); return bar && parseFloat(bar.style.transform.replace("scaleX(", "")) > .8; });
   await mobileNav.getByRole("link", { name: "Home", exact: true }).click();
   await atTop(page);
   await scrollDown(page);
@@ -203,7 +206,7 @@ try {
   await page.getByRole("button", { name: "Submit request" }).click();
   await text("Request received.");
   await go("/guest/concierge");
-  await text("Start a conversation with the GrandStay team.");
+  await text("Start a conversation with the Guestly team.");
   await atTop(page);
   await page.getByLabel("Message", { exact: true }).fill("When is breakfast?");
   const send = page.getByRole("button", { name: "Send message" });
@@ -254,6 +257,7 @@ try {
   await staysInPlace(page, editRoom, async () => {
     await editRoom.click();
     await page.locator(".management-inline-editor").getByRole("heading", { name: "Edit room type" }).waitFor();
+    assert.equal(await page.locator(".motion-disclosure-open").first().evaluate(node => getComputedStyle(node).animationName), "guestly-expand");
   });
   await viewPhoto(page, ".management-inline-editor .management-image");
   await page.getByLabel("Nightly price (₦)").fill("61000");
@@ -289,7 +293,7 @@ try {
     await fit(page);
   }
   assert.deepEqual(errors, []);
-  console.log("GrandStay browser smoke checks passed");
+  console.log("Guestly browser smoke checks passed");
 } finally {
   await browser.close();
 }
