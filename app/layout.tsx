@@ -11,9 +11,9 @@ import "./image-viewer.css";
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta", display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "GrandStay | Your comfort, our priority", template: "%s | GrandStay" },
-  description: "Explore GrandStay rooms and enjoy a more seamless hotel guest experience.",
-  applicationName: "GrandStay",
+  title: { default: "Guestly | Your comfort, our priority", template: "%s | Guestly" },
+  description: "Explore Guestly rooms and enjoy a more seamless hotel guest experience.",
+  applicationName: "Guestly",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

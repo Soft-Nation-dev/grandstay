@@ -31,6 +31,7 @@ const roleLogin = async (role, target = page) => {
   await target.getByRole("button", { name: new RegExp(`^${role}\\b`, "i") }).click();
   await target.waitForURL(url => url.pathname.replace(/\/$/, "").endsWith(`/${role === "Super admin" ? "admin" : role.toLowerCase()}`));
   await text("This is a demo demonstration", target);
+  await target.getByText(new RegExp("@guestly\\.example$")).first().waitFor();
   await target.locator('.dashboard-welcome[data-gs-reveal="shown"]:visible').first().waitFor();
 };
 const fit = async target => {
@@ -48,6 +49,7 @@ const atTop = async target => {
 };
 const staysInPlace = async (target, button, action) => {
   await button.scrollIntoViewIfNeeded();
+  await button.click({ trial: true });
   const before = await scrollPosition(target);
   await action();
   const after = await scrollPosition(target);
@@ -56,10 +58,11 @@ const staysInPlace = async (target, button, action) => {
 const viewPhoto = async (target, tile, dismiss = "button", keyboard = false) => {
   const trigger = target.locator(tile).locator(".image-viewer-trigger").first();
   await trigger.scrollIntoViewIfNeeded();
+  await trigger.click({ trial: true });
+  if (keyboard) await trigger.evaluate(button => button.focus({ preventScroll: true }));
   const before = await scrollPosition(target);
   const route = target.url();
   if (keyboard) {
-    await trigger.focus();
     await target.keyboard.press("Enter");
   } else {
     await trigger.click();
@@ -97,6 +100,8 @@ const checkOut = date(2);
 const query = new URLSearchParams({ room: "standard-cozy-haven", checkIn, checkOut, guests: "2" });
 try {
   await go("/");
+  await page.getByRole("link", { name: "Guestly home" }).first().waitFor();
+  assert.match(await page.title(), /Guestly/);
   await fit(page);
   assert.equal(await page.locator(".hero-copy h1").evaluate(node => getComputedStyle(node).animationName), "gs-enter");
   assert.equal(await page.locator(".hero").evaluate(node => getComputedStyle(node).animationName), "gs-reveal");
@@ -225,7 +230,7 @@ try {
   await page.getByRole("button", { name: "Submit request" }).click();
   await text("Request received.");
   await go("/guest/concierge");
-  await text("Start a conversation with the GrandStay team.");
+  await text("Start a conversation with the Guestly team.");
   await atTop(page);
   await page.getByLabel("Message", { exact: true }).fill("When is breakfast?");
   const send = page.getByRole("button", { name: "Send message" });
@@ -311,7 +316,7 @@ try {
     await fit(page);
   }
   assert.deepEqual(errors, []);
-  console.log("GrandStay browser smoke checks passed");
+  console.log("Guestly browser smoke checks passed");
 } finally {
   await browser.close();
 }

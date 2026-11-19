@@ -20,7 +20,13 @@ export function StaySearch({ initial, roomId }: { initial?: Search; roomId?: str
     setError("");
     const query = new URLSearchParams({ checkIn, checkOut, guests: String(guests) });
     if (roomId) query.set("room", roomId);
-    router.push(`/rooms?${query}`, { scroll: false });
+    if (roomId) {
+      const url = new URL(window.location.href);
+      url.search = query.toString();
+      window.history.pushState(null, "", url);
+    } else {
+      router.push(`/rooms?${query}`, { scroll: false });
+    }
   }
 
   return <form className="stay-search" onSubmit={submit}>

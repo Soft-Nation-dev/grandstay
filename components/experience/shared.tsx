@@ -11,7 +11,7 @@ export function Status({ status }: { status: CheckInStatus | RequestStatus }) {
 }
 
 export function ExperienceHeading({ role, title, description }: { role: "guest" | "staff"; title: string; description: string }) {
-  return <div className="experience-heading"><Link href={`/${role}`} className="text-link"><Icon name="back" /> Back to dashboard</Link><div><span className="eyebrow">GrandStay experience</span><h2>{title}</h2><p className="muted">{description}</p></div></div>;
+  return <div className="experience-heading"><Link href={`/${role}`} className="text-link"><Icon name="back" /> Back to dashboard</Link><div><span className="eyebrow">Guestly experience</span><h2>{title}</h2><p className="muted">{description}</p></div></div>;
 }
 
 export function BookingPicker({ bookings, value, onChange }: { bookings: Booking[]; value: string; onChange: (value: string) => void }) {

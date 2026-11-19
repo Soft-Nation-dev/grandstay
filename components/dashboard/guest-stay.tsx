@@ -24,7 +24,7 @@ export function GuestStayOverview() {
   if (!account || account.role !== "guest") return null;
   const linkedGuest = datasetGuestId(account.id);
   const stay = guestStay(bookings, linkedGuest ? recordedBookings(linkedGuest) : [], account.id, hotelDate());
-  if (stay.kind === "empty") return <section className="panel guest-stay" aria-label="Stay overview"><div className="guest-stay-heading"><span className="feature-icon"><Icon name="bed" /></span><div><span className="eyebrow">Your stay</span><h2>No reservations yet</h2><p className="muted">Find a room for your next visit to GrandStay.</p></div></div><Link href="/rooms" className="button button-primary">Book a room <Icon name="arrow" /></Link></section>;
+  if (stay.kind === "empty") return <section className="panel guest-stay" aria-label="Stay overview"><div className="guest-stay-heading"><span className="feature-icon"><Icon name="bed" /></span><div><span className="eyebrow">Your stay</span><h2>No reservations yet</h2><p className="muted">Find a room for your next visit to Guestly.</p></div></div><Link href="/rooms" className="button button-primary">Book a room <Icon name="arrow" /></Link></section>;
   if (stay.kind === "recorded") {
     const item = stay.booking;
     const payment = recordedPayment(item.Booking_ID);

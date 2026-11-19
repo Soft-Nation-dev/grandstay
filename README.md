@@ -1,12 +1,12 @@
-# GrandStay
+# Guestly
 
-GrandStay is a hotel guest experience platform built as part of a team project. The idea is to make a hotel stay easier, from finding a room and making a reservation to checking in, requesting services and talking to the concierge.
+Guestly is a hotel guest experience platform built as part of a team project. The idea is to make a hotel stay easier, from finding a room and making a reservation to checking in, requesting services and talking to the concierge.
 
 The frontend also gives hotel staff, managers and super admins their own workspaces to handle the day-to-day operations behind the guest experience.
 
 ## Try it out
 
-[Open GrandStay](https://soft-nation-dev.github.io/grandstay/)
+[Open Guestly](https://soft-nation-dev.github.io/guestly/)
 
 You can browse rooms without an account. To explore the dashboards, head to the sign-in page and choose one of the four preview accounts.
 
@@ -15,8 +15,8 @@ You can browse rooms without an account. To explore the dashboards, head to the 
 Make sure Node.js is installed, then clone the repository and run:
 
 ```bash
-git clone https://github.com/Soft-Nation-dev/grandstay.git
-cd grandstay
+git clone https://github.com/Soft-Nation-dev/guestly.git
+cd guestly
 npm ci
 npm run dev
 ```
@@ -54,6 +54,6 @@ npm run lint
 npm run build
 ```
 
-GitHub Actions runs the frontend checks and prepares a static GitHub Pages build. GitHub Pages hosts the frontend only; a live backend will need its own hosting. The normal Next.js development setup is kept separate from the static build.
+GitHub Actions runs the frontend checks and prepares a static GitHub Pages build. GitHub Pages hosts the frontend only; a live backend will need its own hosting. The normal Next.js development setup is kept separate from the static build. The Pages build uses the repository name to set the base path automatically.
 
 Built with Next.js, React, TypeScript and Tailwind CSS.
