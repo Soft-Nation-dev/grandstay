@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import { useSearchParams } from "next/navigation";
 import { latestConversations } from "@/lib/staff-operations";
 import { useEffect, useRef, useState, type FormEvent } from "react";
@@ -14,15 +14,15 @@ import type { ConciergeMessage } from "@/types/experience";
 function Conversation({ guestId, title, messages, staff }: { guestId: string; title: string; messages: ConciergeMessage[]; staff: boolean }) {
   const [text, setText] = useState("");
   const [error, setError] = useState("");
-  const bottom = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLDivElement>(null);
   const ownRole = staff ? "staff" : "guest";
-  useEffect(() => { bottom.current?.scrollIntoView({ block: "nearest" }); }, [messages.length]);
+  useEffect(() => { const container = list.current; if (container) container.scrollTop = container.scrollHeight; }, [messages.length]);
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     try { sendMessage(guestId, text); setText(""); } catch (error) { setError(error instanceof Error ? error.message : "Unable to send message."); }
   }
-  return <section className="panel concierge-panel"><div className="conversation-header"><span className="feature-icon"><Icon name={staff ? "user" : "chat"} /></span><div><h3>{title}</h3><p className="muted">{staff ? "Guest conversation" : "Human concierge"}</p></div></div><div className="message-list" role="log" aria-label="Conversation messages">{!messages.length && <div className="message-empty"><Icon name="chat" width={30} height={30} /><p>Start a conversation with the GrandStay team.</p></div>}{messages.map(message => <article key={message.id} className={`message ${message.sender === ownRole ? "message-own" : ""}`}><small>{message.senderName}</small><p>{message.text}</p><small>{formatMoment(message.createdAt)}</small></article>)}<div ref={bottom} /></div><form className="message-form" onSubmit={submit}><label className="auth-field"><span>Message</span><textarea rows={2} value={text} maxLength={1000} placeholder="Type your message…" onChange={event => setText(event.target.value)} required /></label>{error && <p className="auth-error" role="alert">{error}</p>}<button className="button button-primary" type="submit" disabled={!text.trim()}>Send message <Icon name="arrow" /></button></form></section>;
+  return <section className="panel concierge-panel"><div className="conversation-header"><span className="feature-icon"><Icon name={staff ? "user" : "chat"} /></span><div><h3>{title}</h3><p className="muted">{staff ? "Guest conversation" : "Human concierge"}</p></div></div><div ref={list} className="message-list" role="log" aria-label="Conversation messages">{!messages.length && <div className="message-empty"><Icon name="chat" width={30} height={30} /><p>Start a conversation with the GrandStay team.</p></div>}{messages.map(message => <article key={message.id} className={`message ${message.sender === ownRole ? "message-own" : ""}`}><small>{message.senderName}</small><p>{message.text}</p><small>{formatMoment(message.createdAt)}</small></article>)}</div><form className="message-form" onSubmit={submit}><label className="auth-field"><span>Message</span><textarea rows={2} value={text} maxLength={1000} placeholder="Type your message…" onChange={event => setText(event.target.value)} required /></label>{error && <p className="auth-error" role="alert">{error}</p>}<button className="button button-primary" type="submit" disabled={!text.trim()}>Send message <Icon name="arrow" /></button></form></section>;
 }
 
 export function GuestConcierge() {
