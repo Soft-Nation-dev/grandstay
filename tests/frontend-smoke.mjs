@@ -225,7 +225,7 @@ try {
   await page.getByRole("button", { name: "Submit request" }).click();
   await text("Request received.");
   await go("/guest/concierge");
-  await text("Start a conversation with the GrandStay team.");
+  await text("Start a conversation with the Guestly team.");
   await atTop(page);
   await page.getByLabel("Message", { exact: true }).fill("When is breakfast?");
   const send = page.getByRole("button", { name: "Send message" });
@@ -311,7 +311,7 @@ try {
     await fit(page);
   }
   assert.deepEqual(errors, []);
-  console.log("GrandStay browser smoke checks passed");
+  console.log("Guestly browser smoke checks passed");
 } finally {
   await browser.close();
 }
