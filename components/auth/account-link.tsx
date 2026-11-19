@@ -7,5 +7,5 @@ import { roleRoutes } from "@/types/auth";
 
 export function AccountLink({ mobile = false }: { mobile?: boolean }) {
   const account = useAuth();
-  return <Link className={mobile ? undefined : "account-link"} href={account ? roleRoutes[account.role] : "/login"}><Icon name="user" />{account ? "My account" : "Sign in"}</Link>;
+  return <Link resetScroll className={mobile ? undefined : "account-link"} href={account ? roleRoutes[account.role] : "/login"}><Icon name="user" />{account ? "My account" : "Sign in"}</Link>;
 }
