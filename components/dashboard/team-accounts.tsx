@@ -105,7 +105,7 @@ export function TeamAccounts() {
   const accounts = useAccounts().filter(account => account.role === "staff" || account.role === "manager");
   const metrics = [{ label: "Team accounts", value: accounts.length, icon: "people" }, { label: "Active staff", value: accounts.filter(item => item.active && item.role === "staff").length, icon: "user" }, { label: "Active managers", value: accounts.filter(item => item.active && item.role === "manager").length, icon: "chart" }, { label: "Inactive accounts", value: accounts.filter(item => !item.active).length, icon: "shield" }] as const;
   return <section className="workspace-section">
-    <div><span className="eyebrow">Administration</span><h2>Team access management</h2><p className="muted">Provision staff and managers and control their access to GrandStay.</p></div>
+    <div><span className="eyebrow">Administration</span><h2>Team access management</h2><p className="muted">Provision staff and managers and control their access to Guestly.</p></div>
     <div className="staff-metrics">{metrics.map(item => <div className="panel staff-metric" key={item.label}><div><span>{item.label}</span><Icon name={item.icon} /></div><strong>{item.value}</strong></div>)}</div>
     <div className="team-grid admin-team-grid"><ProvisionForm /><TeamDirectory accounts={accounts} /></div>
     <p className="auth-disclaimer"><Icon name="info" />Guest registration is independent of team access. The super-admin account is protected from changes in this workspace.</p>
