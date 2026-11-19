@@ -53,17 +53,16 @@ export function AuthForm({ register = false }: { register?: boolean }) {
   return <div className="auth-form-stack">
     <form className="auth-form-stack" onSubmit={submit} aria-busy={busy}>
       {register && <label className="auth-field"><span>Full name</span><input name="name" autoComplete="name" minLength={2} required /></label>}
-      <label className="auth-field"><span>Email address</span><input type="email" name="email" autoComplete="username" placeholder="you@example.com" required /></label>
+      <label className="auth-field"><span>{register ? "Sample email address" : "Email address"}</span><input type="email" name="email" autoComplete="username" placeholder="you@example.com" required /></label>
       <PasswordField autoComplete={register ? "new-password" : "current-password"} minLength={register ? 8 : undefined} />
-      {register && <><p className="field-hint">Use at least eight characters. Choose a fictional password for this preview.</p><PasswordField label="Confirm password" name="confirmPassword" autoComplete="new-password" minLength={8} /></>}
+      {register && <><p className="field-hint">Use at least eight characters.</p><PasswordField label="Confirm password" name="confirmPassword" autoComplete="new-password" minLength={8} /></>}
       {error && <p className="auth-error" role="alert">{error}</p>}
       <button disabled={busy || account === undefined} className="button button-primary auth-submit" type="submit">{busy ? "Please wait…" : register ? "Create guest account" : "Sign in"}<Icon name="arrow" /></button>
     </form>
     <p className="auth-switch">{register ? "Already have an account?" : "New to GrandStay?"} <Link href={`${register ? "/login" : "/register"}${nextQuery}`}>{register ? "Sign in" : "Create guest account"}</Link></p>
     {!register && <section className="demo-section">
-      <h3>Explore the demo</h3><p>Choose a role to sign in with a sample account.</p>
+      <h3>Preview accounts</h3><p>Choose a role to sign in with a sample account.</p>
       <div className="demo-grid">{demos.map(user => <button className="demo-role" key={user.id} disabled={busy || account === undefined || !user.active} onClick={() => void authenticate(() => signIn({ email: user.email, password: demoPassword }))}><Icon name={user.role === "guest" ? "user" : user.role === "staff" ? "people" : user.role === "manager" ? "chart" : "shield"} /><span>{roleLabels[user.role]}<small>{user.active ? user.name : "Inactive"}</small></span></button>)}</div>
     </section>}
-    <p className="auth-disclaimer"><Icon name="info" />Frontend preview only. Do not enter real credentials or personal information.</p>
   </div>;
 }
