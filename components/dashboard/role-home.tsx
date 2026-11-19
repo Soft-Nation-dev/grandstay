@@ -11,14 +11,16 @@ const workspaces: Record<Exclude<Role, "admin">, WorkspaceItem[]> = {
   guest: [
     { title: "Explore rooms", description: "Browse rooms and find availability for your next stay.", icon: "bed", href: "/rooms" },
     { title: "My bookings", description: "View your confirmed reservations.", icon: "calendar", href: "/guest/bookings" },
-    { title: "Digital check-in", description: "Submit your arrival details before you travel.", icon: "key" },
-    { title: "Concierge & services", description: "Contact hotel staff and track service requests.", icon: "chat" },
+    { title: "Digital check-in", description: "Submit your arrival details before you travel.", icon: "key", href: "/guest/check-in" },
+    { title: "Concierge", description: "Contact hotel staff with questions about your stay.", icon: "chat", href: "/guest/concierge" },
+    { title: "Service requests", description: "Request hotel assistance and track its progress.", icon: "list", href: "/guest/services" },
+    { title: "Room access", description: "View the temporary access code after check-in approval.", icon: "key", href: "/guest/access" },
   ],
   staff: [
     { title: "Reservations", description: "View guest reservations and upcoming arrivals.", icon: "calendar", href: "/staff/bookings" },
-    { title: "Check-in queue", description: "Review guest check-in submissions.", icon: "key" },
-    { title: "Service requests", description: "Manage and update guest service requests.", icon: "list" },
-    { title: "Concierge", description: "Respond to guest enquiries.", icon: "chat" },
+    { title: "Check-in queue", description: "Review guest check-in submissions.", icon: "key", href: "/staff/check-ins" },
+    { title: "Service requests", description: "Manage and update guest service requests.", icon: "list", href: "/staff/services" },
+    { title: "Concierge", description: "Respond to guest enquiries.", icon: "chat", href: "/staff/concierge" },
   ],
   manager: [
     { title: "Bookings & payments", description: "Monitor reservations and payment activity.", icon: "chart", href: "/manager/bookings" },

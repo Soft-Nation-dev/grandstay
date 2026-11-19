@@ -15,6 +15,7 @@ function BookingCard({ booking, showGuest }: { booking: Booking; showGuest: bool
     <div className="booking-dates"><span><Icon name="calendar" />{booking.checkIn} — {booking.checkOut}</span><span><Icon name="people" />{booking.guests} {booking.guests === 1 ? "guest" : "guests"}</span></div>
     <div className="booking-total"><span>Paid (demo)</span><strong>{formatMoney(booking.amount)}</strong></div>
     <p className="muted booking-reference">Payment reference: {booking.paymentReference}</p>
+    {!showGuest && <Link className="button button-soft" href={`/guest/check-in?booking=${encodeURIComponent(booking.id)}`}>View digital check-in <Icon name="arrow" /></Link>}
   </article>;
 }
 
