@@ -1,69 +1,45 @@
 import Image from "next/image";
+import Link from "next/link";
+import { SiteShell } from "@/components/layout/site-shell";
+import { RoomCard } from "@/components/public/room-card";
+import { StaySearch } from "@/components/public/stay-search";
+import { Icon } from "@/components/ui/icon";
+import { hotel } from "@/data/mock";
+import { getFeaturedRooms } from "@/services/rooms";
 
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+  return <SiteShell>
+    <div className="shell home-content">
+      <section className="hero">
+        <div className="hero-copy">
+          <span className="hero-label"><Icon name="hotel" /> Welcome to GrandStay</span>
+          <h1>{hotel.tagline}</h1>
+          <p>{hotel.description} Discover thoughtfully designed rooms, easier check-in and a concierge ready to assist.</p>
+          <span className="hero-location"><Icon name="location" /> {hotel.location}</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        <div className="hero-image"><Image src={hotel.heroImage} alt="Warmly furnished GrandStay executive suite" fill sizes="(max-width: 760px) 100vw, 55vw" priority /></div>
+      </section>
+      <section className="panel reserve-panel" id="reserve" aria-labelledby="reserve-title">
+        <div className="section-heading"><div><span className="eyebrow">Make yourself at home</span><h2 id="reserve-title">Reserve your stay</h2><p>Choose your dates and find a room that suits you.</p></div></div>
+        <StaySearch />
+      </section>
+      <section className="tip-banner">
+        <div className="feature-icon"><Icon name="key" width={24} height={24} /></div>
+        <div><strong>Arriving soon?</strong><p>With pre-arrival check-in, you can submit your details before reaching the hotel.</p></div>
+      </section>
+      <section id="experience" className="content-section">
+        <div className="section-heading"><div><span className="eyebrow">Designed around you</span><h2>Seamless guest experiences</h2><p>Everything you need for a smoother stay.</p></div></div>
+        <div className="experience-grid">{hotel.experiences.map((experience) => <article className="panel experience-card" key={experience.title}><span className="feature-icon"><Icon name={experience.icon} width={24} height={24} /></span><h3>{experience.title}</h3><p>{experience.description}</p></article>)}</div>
+      </section>
+      <section className="content-section">
+        <div className="section-heading"><div><span className="eyebrow">Find your retreat</span><h2>Featured rooms &amp; suites</h2><p>Thoughtful spaces for work, rest and everything in between.</p></div><Link href="/rooms" className="text-link">View all rooms <Icon name="arrow" /></Link></div>
+        <div className="room-grid">{getFeaturedRooms().map((room) => <RoomCard key={room.id} room={room} />)}</div>
+      </section>
+      <section className="content-section">
+        <div className="section-heading"><div><span className="eyebrow">More than a room</span><h2>Explore GrandStay</h2><p>Discover spaces to dine, relax and recharge.</p></div></div>
+        <div className="facility-grid">{hotel.facilities.map((facility) => <article className="facility-card" key={facility.title}><div className="facility-image"><Image src={facility.image} alt={facility.title} fill sizes="(max-width: 640px) 100vw, 33vw" /></div><div><h3>{facility.title}</h3><p>{facility.description}</p></div></article>)}</div>
+      </section>
+      <section className="closing-banner"><div><h2>Make your next stay a GrandStay.</h2><p>Find the room that feels right for you.</p></div><Link className="button button-white" href="/rooms">Explore rooms <Icon name="arrow" /></Link></section>
     </div>
-  );
+  </SiteShell>;
 }
