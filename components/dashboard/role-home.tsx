@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import { RecommendedRooms } from "@/components/public/recommended-rooms";
 import { RoleGuard } from "@/components/auth/role-guard";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
