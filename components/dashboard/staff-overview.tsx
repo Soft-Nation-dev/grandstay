@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import Image from "@/components/ui/hotel-image";
 import type { ReactNode } from "react";
 import { hotel } from "@/data/mock";
