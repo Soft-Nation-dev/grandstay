@@ -57,10 +57,11 @@ const staysInPlace = async (target, button, action) => {
 const viewPhoto = async (target, tile, dismiss = "button", keyboard = false) => {
   const trigger = target.locator(tile).locator(".image-viewer-trigger").first();
   await trigger.scrollIntoViewIfNeeded();
+  await trigger.click({ trial: true });
+  if (keyboard) await trigger.evaluate(button => button.focus({ preventScroll: true }));
   const before = await scrollPosition(target);
   const route = target.url();
   if (keyboard) {
-    await trigger.focus();
     await target.keyboard.press("Enter");
   } else {
     await trigger.click();
