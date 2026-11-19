@@ -26,7 +26,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Run browser smoke checks
         run: |
-          npm run start -- --hostname 127.0.0.1 > /tmp/grandstay-server.log 2>&1 &
+          npm run start -- --hostname 127.0.0.1 > /tmp/guestly-server.log 2>&1 &
           for attempt in $(seq 1 60); do
             if curl -fsS http://127.0.0.1:3000 > /dev/null; then break; fi
             sleep 1
