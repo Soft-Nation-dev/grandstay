@@ -115,6 +115,11 @@ try {
   await text("Sign in to continue");
   await roleLogin("Guest");
   await text("Recommended for you");
+  await go("/guest/bookings");
+  await text("Previous reservations");
+  assert.equal(await page.locator(".dataset-record:visible").count(), 5);
+  await go("/guest/loyalty");
+  await text("Recorded stay history");
   await go(`/checkout?${query}`);
   await page.getByRole("button", { name: /^Test payment/ }).click();
   await page.getByRole("button", { name: "Simulate failed payment" }).click();
@@ -144,6 +149,13 @@ try {
   });
   await signOut();
   await roleLogin("Staff");
+  await text("Reservation and service history");
+  await go("/staff/bookings");
+  await text("Imported booking records");
+  assert.equal(await page.locator(".dataset-record:visible").count(), 10);
+  await page.getByLabel("Find a recorded booking").fill("B0001");
+  assert.equal(await page.locator(".dataset-record:visible").count(), 1);
+  await page.getByText("B0001 · G0008", { exact: true }).waitFor();
   await go("/staff/check-ins");
   await page.getByRole("button", { name: "Approve check-in" }).click();
   await text("Approved");
@@ -166,6 +178,11 @@ try {
   await text("Breakfast starts at 7 AM.");
   await signOut();
   await roleLogin("Manager");
+  await text("₦240,815,711");
+  await text("Monthly revenue");
+  await go("/manager/services");
+  await text("Recorded service performance");
+  await text("Imported service records");
   await go("/manager/rooms");
   const editRoom = page.getByRole("button", { name: "Edit room", exact: true }).first();
   await staysInPlace(page, editRoom, async () => {
