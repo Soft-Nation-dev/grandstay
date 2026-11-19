@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Suspense, type ReactNode } from "react";
 import { RouteScroll } from "@/components/navigation/route-scroll";
+import { ImageViewerProvider } from "@/components/ui/image-viewer";
 import "./globals.css";
+import "./premium.css";
+import "./image-viewer.css";
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta", display: "swap" });
 
@@ -13,5 +16,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  return <html lang="en" className={jakarta.variable}><body><Suspense fallback={null}><RouteScroll /></Suspense>{children}</body></html>;
+  return <html lang="en" className={jakarta.variable}><body><Suspense fallback={null}><RouteScroll /></Suspense><ImageViewerProvider>{children}</ImageViewerProvider></body></html>;
 }

@@ -51,6 +51,37 @@ const staysInPlace = async (target, button, action) => {
   const after = await scrollPosition(target);
   assert.ok(Math.abs(after - before) <= 12, `Unexpected scroll change: ${before} to ${after} on ${target.url()}`);
 };
+const viewPhoto = async (target, tile, dismiss = "button", keyboard = false) => {
+  const trigger = target.locator(tile).locator(".image-viewer-trigger").first();
+  await trigger.scrollIntoViewIfNeeded();
+  const before = await scrollPosition(target);
+  const route = target.url();
+  if (keyboard) {
+    await trigger.focus();
+    await target.keyboard.press("Enter");
+  } else {
+    await trigger.click();
+  }
+  const viewer = target.getByRole("dialog", { name: "Enlarged photo" });
+  await viewer.waitFor({ state: "visible" });
+  await viewer.locator("img").evaluate(image => image.decode());
+  assert.ok(await viewer.evaluate(node => node.matches(":modal")));
+  assert.equal(await viewer.evaluate(node => getComputedStyle(node, "::backdrop").backdropFilter), "blur(12px)");
+  assert.equal(await target.evaluate(() => document.documentElement.style.overflow), "hidden");
+  const fits = await viewer.locator("img").evaluate(image => {
+    const rect = image.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0 && rect.width <= innerWidth && rect.height <= innerHeight;
+  });
+  assert.ok(fits);
+  if (dismiss === "escape") await target.keyboard.press("Escape");
+  else if (dismiss === "backdrop") await target.mouse.click(2, 2);
+  else await viewer.getByRole("button", { name: "Close photo", exact: true }).click();
+  await viewer.waitFor({ state: "hidden" });
+  assert.equal(target.url(), route);
+  assert.ok(Math.abs(await scrollPosition(target) - before) <= 4, "Image viewer changed page scroll");
+  assert.equal(await trigger.evaluate(button => button === document.activeElement), true);
+  assert.notEqual(await target.evaluate(() => document.documentElement.style.overflow), "hidden");
+};
 const scrollDown = async target => {
   await target.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   assert.ok(await scrollPosition(target) > 100);
@@ -65,8 +96,16 @@ const query = new URLSearchParams({ room: "standard-cozy-haven", checkIn, checkO
 try {
   await go("/");
   await fit(page);
+  assert.equal(await page.locator(".hero-copy h1").evaluate(node => getComputedStyle(node).animationName), "gs-enter");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  assert.equal(await page.locator(".hero-copy h1").evaluate(node => getComputedStyle(node).animationName), "none");
+  assert.equal(await page.locator(".header-cta").evaluate(node => getComputedStyle(node).transitionDuration), "0s");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.locator("img").first().evaluate(image => image.decode());
+  await viewPhoto(page, ".hero-image", "escape", true);
+  await viewPhoto(page, ".home-content .facility-image", "backdrop");
   await go("/rooms");
+  await viewPhoto(page, ".room-photo");
   await fit(page);
   await page.setViewportSize({ width: 375, height: 760 });
   await go("/");
@@ -89,6 +128,7 @@ try {
   await page.getByRole("link", { name: "View room" }).first().click();
   await page.getByRole("heading", { name: "Standard Cozy Haven", level: 1 }).waitFor();
   await atTop(page);
+  await viewPhoto(page, ".detail-photo", "backdrop");
   const bookingForm = page.locator(".detail-booking:visible");
   await bookingForm.getByLabel("Check-in", { exact: true }).fill(checkIn);
   await bookingForm.getByLabel("Check-out", { exact: true }).fill(checkOut);
@@ -121,6 +161,19 @@ try {
   assert.ok(await stay.evaluate(node => node.compareDocumentPosition(document.querySelector(".workspace-section")) & Node.DOCUMENT_POSITION_FOLLOWING));
   await page.setViewportSize({ width: 375, height: 760 });
   await fit(page);
+  await go("/guest/loyalty");
+  const guestNav = page.getByRole("navigation", { name: "Guest navigation" });
+  await guestNav.getByRole("link", { name: "Loyalty" }).waitFor();
+  await page.waitForFunction(() => {
+    const nav = document.querySelector('nav[aria-label="Guest navigation"]');
+    const active = nav?.querySelector('[aria-current="page"]');
+    if (!nav || !active) return false;
+    const bounds = nav.getBoundingClientRect();
+    const item = active.getBoundingClientRect();
+    return item.left >= bounds.left && item.right <= bounds.right + 1;
+  });
+  await atTop(page);
+  await fit(page);
   await page.setViewportSize({ width: 1280, height: 900 });
   await go("/guest/bookings");
   await text("Previous reservations");
@@ -128,6 +181,7 @@ try {
   await go("/guest/loyalty");
   await text("Recorded stay history");
   await go(`/checkout?${query}`);
+  await viewPhoto(page, ".summary-photo");
   await page.getByRole("button", { name: /^Test payment/ }).click();
   await page.getByRole("button", { name: "Simulate failed payment" }).click();
   await page.getByText(/^Payment failed\./).waitFor();
@@ -195,11 +249,13 @@ try {
   await text("Recorded service performance");
   await text("Imported service records");
   await go("/manager/rooms");
+  await viewPhoto(page, ".management-image");
   const editRoom = page.getByRole("button", { name: "Edit room", exact: true }).first();
   await staysInPlace(page, editRoom, async () => {
     await editRoom.click();
     await page.locator(".management-inline-editor").getByRole("heading", { name: "Edit room type" }).waitFor();
   });
+  await viewPhoto(page, ".management-inline-editor .management-image");
   await page.getByLabel("Nightly price (₦)").fill("61000");
   await page.getByRole("button", { name: "Save room" }).click();
   await page.getByRole("button", { name: "Save room" }).waitFor({ state: "hidden" });
