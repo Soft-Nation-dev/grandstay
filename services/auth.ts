@@ -108,7 +108,7 @@ async function createAccount({ name, email, password }: Registration, role: Role
   const normalized = normalizeEmail(email);
   if (name.trim().length < 2 || name.trim().length > 100) throw new Error("Enter a name between two and 100 characters.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) || normalized.length > 254) throw new Error("Enter a valid email address.");
-  if (password.length < 8) throw new Error("Use at least eight characters for the demo password.");
+  if (password.length < 8) throw new Error("Use at least eight characters for the password.");
   if (getAccounts().some(item => item.email === normalized)) throw new Error("An account already exists with this email.");
   const salt = crypto.randomUUID();
   const digest = await passwordDigest(password, salt);
