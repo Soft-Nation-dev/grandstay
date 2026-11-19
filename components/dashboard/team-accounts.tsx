@@ -1,5 +1,6 @@
 "use client";
 
+import { Disclosure } from "@/components/motion/disclosure";
 import { useState, type FormEvent } from "react";
 import { useAccounts } from "@/hooks/use-auth";
 import { provisionTeamAccount, updateTeamAccess } from "@/services/auth";
@@ -95,7 +96,7 @@ function TeamDirectory({ accounts }: { accounts: Account[] }) {
     {notice && <p className="auth-notice" role="status"><Icon name="check" />{notice}</p>}
     <div className="team-list">{visible.map(account => <article className="admin-account" key={account.id}>
       <div className="admin-account-main"><span className="team-avatar"><Icon name="user" /></span><div className="admin-account-details"><strong>{account.name}</strong><p>{account.email}</p><div className="admin-account-tags"><span className="role-pill">{roleLabels[account.role]}</span><span className={`experience-status ${account.active ? "status-approved" : "status-rejected"}`}>{account.active ? "Active" : "Inactive"}</span></div></div><button className="button button-soft" aria-expanded={editing === account.id} onClick={() => { setEditing(editing === account.id ? null : account.id); setNotice(""); }}>Manage</button></div>
-      {editing === account.id && <AccessEditor key={account.id} account={account} close={() => setEditing(null)} saved={() => { setEditing(null); setNotice(`Access updated for ${account.name}.`); }} />}
+      <Disclosure open={editing === account.id}><AccessEditor key={account.id} account={account} close={() => setEditing(null)} saved={() => { setEditing(null); setNotice(`Access updated for ${account.name}.`); }} /></Disclosure>
     </article>)}</div>
     {!visible.length && <p className="staff-empty">No matching team accounts.</p>}
   </section>;
