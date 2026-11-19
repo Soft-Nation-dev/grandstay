@@ -23,7 +23,7 @@ export function MotionDirector() {
     let main: HTMLElement | undefined;
 
     function play(element: Element, frames: Keyframe[], duration: number, delay = 0) {
-      if (media.matches || !element.getClientRects().length) return;
+      if (media.matches || typeof element.animate !== "function" || !element.getClientRects().length) return;
       const animation = element.animate(frames, { duration, delay, easing, fill: "backwards" });
       animations.add(animation);
       animation.finished.catch(() => undefined).finally(() => animations.delete(animation));
@@ -53,6 +53,18 @@ export function MotionDirector() {
       if (line) line.style.transform = `scaleX(${extent > 0 ? Math.min(1, Math.max(0, window.scrollY / extent)) : 0})`;
     }
 
+    function enterPage() {
+      const visible = [...document.querySelectorAll<HTMLElement>("main,.auth-main")].find(element => element.getClientRects().length > 0);
+      if (!visible || visible === main) return;
+      main = visible;
+      play(main, [{ opacity: .24, translate: "0 18px" }, { opacity: 1, translate: "0 0" }], 540);
+    }
+
+    function onPress(event: MouseEvent) {
+      const button = event.target instanceof Element ? event.target.closest("button:not(.image-viewer-trigger):not(.image-viewer-dismiss),.button,.text-link,.mobile-nav a,.staff-navigation a,.desktop-nav a") : null;
+      if (button && !button.matches(":disabled,[aria-disabled=true]")) play(button, [{ scale: ".965" }, { scale: "1" }], 230);
+    }
+
     function onScroll() {
       if (frame) return;
       frame = requestAnimationFrame(() => { frame = 0; progress(); });
@@ -68,25 +80,28 @@ export function MotionDirector() {
       animations.clear();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      document.removeEventListener("click", onPress, true);
     }
 
     function start() {
       stop();
       if (media.matches) return;
       initial = requestAnimationFrame(() => {
-        main = [...document.querySelectorAll<HTMLElement>("main,.auth-main")].find(element => element.getClientRects().length > 0);
-        if (main) play(main, [{ opacity: .35, translate: "0 12px" }, { opacity: 1, translate: "0 0" }], 430);
-        observer = new IntersectionObserver(entries => {
+        main = undefined;
+        enterPage();
+        if ("IntersectionObserver" in window) observer = new IntersectionObserver(entries => {
           entries.filter(entry => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top).forEach((entry, index) => reveal(entry.target, index));
         }, { threshold: .06 });
         register(document, true);
         mutations = new MutationObserver(records => {
+          enterPage();
           for (const record of records) for (const node of record.addedNodes) if (node instanceof Element) register(node);
           onScroll();
         });
         mutations.observe(document.body, { childList: true, subtree: true });
         window.addEventListener("scroll", onScroll, { passive: true });
         window.addEventListener("resize", onScroll, { passive: true });
+        document.addEventListener("click", onPress, true);
         progress();
       });
     }
