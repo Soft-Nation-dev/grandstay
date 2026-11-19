@@ -491,3 +491,20 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 @media (max-width: 760px) {
   html { scroll-padding-bottom: 82px; }
 }
+
+.dataset-section { min-width:0; }
+.dataset-record-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.dataset-record { display:grid; align-content:start; gap:8px; min-width:0; border:1px solid var(--line); padding:14px; border-radius:12px; background:var(--canvas); overflow-wrap:anywhere; }
+.dataset-record h3 { font-size:16px; }
+.dataset-record .booking-total { padding-top:10px; font-size:12px; }
+.dataset-record .booking-total strong { font-size:16px; }
+.dataset-pagination { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; font-size:12px; color:var(--body); }
+.dataset-pagination .button { min-height:40px; padding:8px 12px; font-size:12px; }
+.dataset-facts { display:flex; flex-wrap:wrap; gap:10px 16px; font-size:12px; color:var(--muted); }
+.dataset-facts strong { display:block; color:var(--ink); }
+.dataset-chart { display:grid; gap:10px; }
+.dataset-chart-row { display:grid; grid-template-columns:52px minmax(0,1fr) minmax(80px,auto); gap:8px; align-items:center; font-size:11px; }
+.dataset-chart-row strong { font-size:11px; text-align:right; font-variant-numeric:tabular-nums; }
+.dataset-track { height:13px; background:var(--mint); border-radius:4px; overflow:hidden; }
+.dataset-track span { display:block; height:100%; background:var(--primary); border-radius:4px; }
+@media(max-width:640px) { .dataset-record-grid { grid-template-columns:minmax(0,1fr); } }
