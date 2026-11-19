@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { RoleHome } from "@/components/dashboard/role-home";
+import { RoleGuard } from "@/components/auth/role-guard";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { ManagerOverview } from "@/components/management/overview";
 
-export const metadata: Metadata = { title: "Manager workspace" };
+export const metadata: Metadata = { title: "Manager overview" };
 
 export default function Page() {
-  return <RoleHome role="manager" />;
+  return <RoleGuard role="manager"><DashboardShell><ManagerOverview /></DashboardShell></RoleGuard>;
 }
