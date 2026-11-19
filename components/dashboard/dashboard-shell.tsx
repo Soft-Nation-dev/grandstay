@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { GuestNavigation } from "@/components/dashboard/guest-navigation";
 import { ManagerNavigation } from "@/components/dashboard/manager-navigation";
 import { StaffNavigation } from "@/components/dashboard/staff-navigation";
 import { Brand } from "@/components/layout/site-shell";
@@ -28,6 +29,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     <main className="shell dashboard-page" id="dashboard-content">
       <Link href="/" className="text-link"><Icon name="back" /> Hotel homepage</Link>
       <div className="dashboard-welcome"><div><span className="eyebrow">{roleLabels[account.role]} workspace</span><h1>Welcome, {account.name.split(" ")[0]}.</h1><p>{account.email}</p></div><div className="dashboard-avatar" aria-hidden="true">{account.name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase()}</div></div>
+      {account.role === "guest" && <GuestNavigation />}
       {account.role === "staff" && <StaffNavigation />}
       {account.role === "manager" && <ManagerNavigation />}
       {pathname === roleRoutes[account.role] && <aside className="panel dashboard-explanation"><span className="feature-icon"><Icon name="info" /></span><div><h2>Frontend demonstration</h2><p>Use fictional details only. Accounts, hotel records and messages are stored in this browser. Payments, identity checks and access codes are simulations; no money is charged, no actual ID is uploaded and no physical door is unlocked. Live authentication, shared data and integrations will be enabled by the backend.</p></div></aside>}
