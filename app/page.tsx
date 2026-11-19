@@ -1,11 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SiteShell } from "@/components/layout/site-shell";
-import { RoomCard } from "@/components/public/room-card";
+import { FeaturedRooms } from "@/components/public/featured-rooms";
 import { StaySearch } from "@/components/public/stay-search";
 import { Icon } from "@/components/ui/icon";
 import { hotel } from "@/data/mock";
-import { getFeaturedRooms } from "@/services/rooms";
 
 export default function Home() {
   return <SiteShell>
@@ -33,7 +32,7 @@ export default function Home() {
       </section>
       <section className="content-section">
         <div className="section-heading"><div><span className="eyebrow">Find your retreat</span><h2>Featured rooms &amp; suites</h2><p>Thoughtful spaces for work, rest and everything in between.</p></div><Link href="/rooms" className="text-link">View all rooms <Icon name="arrow" /></Link></div>
-        <div className="room-grid">{getFeaturedRooms().map((room) => <RoomCard key={room.id} room={room} />)}</div>
+        <FeaturedRooms />
       </section>
       <section className="content-section">
         <div className="section-heading"><div><span className="eyebrow">More than a room</span><h2>Explore GrandStay</h2><p>Discover spaces to dine, relax and recharge.</p></div></div>
