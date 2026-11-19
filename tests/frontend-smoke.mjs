@@ -49,6 +49,7 @@ const atTop = async target => {
 };
 const staysInPlace = async (target, button, action) => {
   await button.scrollIntoViewIfNeeded();
+  await button.click({ trial: true });
   const before = await scrollPosition(target);
   await action();
   const after = await scrollPosition(target);
