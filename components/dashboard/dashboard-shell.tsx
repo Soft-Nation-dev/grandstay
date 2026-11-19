@@ -26,7 +26,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     <header className="site-header"><div className="shell header-inner">
       <Brand /><div className="dashboard-header-actions"><span className="role-pill">{roleLabels[account.role]}</span><button className="button button-soft logout-button" onClick={logout}><Icon name="logout" /> Sign out</button></div>
     </div></header>
-    <main className="shell dashboard-page" id="dashboard-content">
+    <main className={`shell dashboard-page${pathname === roleRoutes[account.role] ? "" : " dashboard-subpage"}`} id="dashboard-content">
       <Link href="/" className="text-link"><Icon name="back" /> Hotel homepage</Link>
       <div className="dashboard-welcome"><div><span className="eyebrow">{roleLabels[account.role]} workspace</span><h1>Welcome, {account.name.split(" ")[0]}.</h1><p>{account.email}</p></div><div className="dashboard-avatar" aria-hidden="true">{account.name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase()}</div></div>
       {account.role === "guest" && <GuestNavigation />}

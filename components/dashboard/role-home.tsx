@@ -1,4 +1,5 @@
 import Link from "@/components/navigation/app-link";
+import { GuestStayOverview } from "@/components/dashboard/guest-stay";
 import { RecommendedRooms } from "@/components/public/recommended-rooms";
 import { RoleGuard } from "@/components/auth/role-guard";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
@@ -39,5 +40,5 @@ function WorkspaceCards({ role }: { role: Exclude<Role, "admin"> }) {
 }
 
 export function RoleHome({ role }: { role: Role }) {
-  return <RoleGuard role={role}><DashboardShell>{role === "admin" ? <TeamAccounts /> : <><WorkspaceCards role={role} />{role === "guest" && <RecommendedRooms />}</>}</DashboardShell></RoleGuard>;
+  return <RoleGuard role={role}><DashboardShell>{role === "admin" ? <TeamAccounts /> : <>{role === "guest" && <GuestStayOverview />}<WorkspaceCards role={role} />{role === "guest" && <RecommendedRooms />}</>}</DashboardShell></RoleGuard>;
 }

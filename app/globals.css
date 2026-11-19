@@ -508,3 +508,27 @@ button:disabled { opacity:.55; cursor:not-allowed; }
 .dataset-track { height:13px; background:var(--mint); border-radius:4px; overflow:hidden; }
 .dataset-track span { display:block; height:100%; background:var(--primary); border-radius:4px; }
 @media(max-width:640px) { .dataset-record-grid { grid-template-columns:minmax(0,1fr); } }
+
+.guest-stay { display:grid; gap:16px; min-width:0; border-color:#c8dfd0; }
+.guest-stay-heading { display:flex; align-items:flex-start; gap:12px; min-width:0; }
+.guest-stay-heading>div { flex:1; min-width:0; overflow-wrap:anywhere; }
+.guest-stay-heading h2 { font-size:clamp(19px,3vw,25px); margin:4px 0; color:var(--primary-dark); }
+.guest-stay-heading p { font-size:12px; }
+.guest-stay-heading>.role-pill,.guest-stay-heading>.experience-status { flex:none; }
+.guest-stay-dates { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0; padding:14px; border-radius:12px; background:var(--canvas); }
+.guest-stay-dates dt { color:var(--muted); font-size:11px; }
+.guest-stay-dates dd { display:flex; flex-wrap:wrap; align-items:center; gap:5px; margin:4px 0 0; font-weight:700; font-size:13px; }
+.guest-stay-dates svg { width:16px; height:16px; color:var(--primary); flex:none; }
+.guest-stay-payment,.guest-stay-checkin { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:13px; }
+.guest-stay-payment strong { color:var(--primary); font-size:20px; }
+.guest-stay-checkin { border-top:1px solid var(--line); padding-top:12px; }
+.guest-stay-actions { display:flex; gap:10px; flex-wrap:wrap; }
+.guest-stay-actions .button { flex:1 1 144px; }
+@media(max-width:480px) {
+  .guest-stay { padding:16px; gap:13px; }
+  .guest-stay-heading { gap:8px; }
+  .guest-stay-heading .feature-icon { width:36px; height:36px; }
+  .guest-stay-dates { grid-template-columns:repeat(2,minmax(0,1fr)); padding:12px; }
+  .guest-stay-dates>div:last-child { grid-column:1/-1; display:flex; align-items:center; gap:8px; }
+  .guest-stay-dates>div:last-child dd { margin:0; }
+}

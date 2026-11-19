@@ -65,6 +65,11 @@ const query = new URLSearchParams({ room: "standard-cozy-haven", checkIn, checkO
 try {
   await go("/");
   await fit(page);
+  assert.equal(await page.locator(".hero-copy h1").evaluate(node => getComputedStyle(node).animationName), "gs-enter");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  assert.equal(await page.locator(".hero-copy h1").evaluate(node => getComputedStyle(node).animationName), "none");
+  assert.equal(await page.locator(".header-cta").evaluate(node => getComputedStyle(node).transitionDuration), "0s");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.locator("img").first().evaluate(image => image.decode());
   await go("/rooms");
   await fit(page);
@@ -115,6 +120,26 @@ try {
   await text("Sign in to continue");
   await roleLogin("Guest");
   await text("Recommended for you");
+  const stay = page.getByRole("region", { name: "Stay overview" });
+  await stay.getByRole("link", { name: "All bookings" }).waitFor();
+  assert.match(await stay.innerText(), /Hotel records/);
+  assert.ok(await stay.evaluate(node => node.compareDocumentPosition(document.querySelector(".workspace-section")) & Node.DOCUMENT_POSITION_FOLLOWING));
+  await page.setViewportSize({ width: 375, height: 760 });
+  await fit(page);
+  await go("/guest/loyalty");
+  const guestNav = page.getByRole("navigation", { name: "Guest navigation" });
+  await guestNav.getByRole("link", { name: "Loyalty" }).waitFor();
+  await page.waitForFunction(() => {
+    const nav = document.querySelector('nav[aria-label="Guest navigation"]');
+    const active = nav?.querySelector('[aria-current="page"]');
+    if (!nav || !active) return false;
+    const bounds = nav.getBoundingClientRect();
+    const item = active.getBoundingClientRect();
+    return item.left >= bounds.left && item.right <= bounds.right + 1;
+  });
+  await atTop(page);
+  await fit(page);
+  await page.setViewportSize({ width: 1280, height: 900 });
   await go("/guest/bookings");
   await text("Previous reservations");
   assert.equal(await page.locator(".dataset-record:visible").count(), 5);
@@ -130,7 +155,10 @@ try {
   await page.getByRole("button", { name: /^Test payment/ }).click();
   await page.getByRole("button", { name: "Simulate successful payment" }).click();
   await text("Booking confirmed!");
-  await go("/guest/check-in");
+  await go("/guest");
+  await stay.getByText("Your current stay", { exact: true }).waitFor();
+  await stay.getByRole("heading", { name: "Standard Cozy Haven" }).waitFor();
+  await stay.getByRole("link", { name: "Complete check-in" }).click();
   await page.getByRole("button", { name: "Attach sample" }).click();
   await page.getByRole("button", { name: "Submit for review" }).click();
   await text("Your details are under review");
@@ -169,7 +197,8 @@ try {
   await text("Breakfast starts at 7 AM.");
   await signOut();
   await roleLogin("Guest");
-  await go("/guest/access");
+  await stay.getByRole("link", { name: "View room access" }).waitFor();
+  await stay.getByRole("link", { name: "View room access" }).click();
   await page.locator(".access-code").waitFor();
   assert.match(await page.locator(".access-code").first().innerText(), /^\d{6}$/);
   await go("/guest/services");
