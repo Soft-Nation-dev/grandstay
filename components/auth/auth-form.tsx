@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/app-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import type { FormEvent } from "react";
@@ -27,7 +27,7 @@ export function AuthForm({ register = false }: { register?: boolean }) {
     setBusy(true);
     try {
       const user = await action();
-      router.replace(user.role === "guest" && next ? next : roleRoutes[user.role]);
+      router.replace(user.role === "guest" && next ? next : roleRoutes[user.role], { scroll: false });
     } catch (error) {
       setError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
     } finally {
