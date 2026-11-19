@@ -51,18 +51,21 @@ export const initialExperienceStore: ExperienceStore = { checkIns: [], requests:
 export const documentKinds: DocumentKind[] = ["Passport", "National ID", "Driver's licence"];
 
 export const serviceCategories = [
-  { name: "Room cleaning", description: "Request housekeeping for your room." },
-  { name: "Room amenities", description: "Request towels or other room essentials." },
-  { name: "Food & beverages", description: "Ask hotel staff about dining assistance." },
-  { name: "Technical support", description: "Get assistance with room equipment." },
-  { name: "Other assistance", description: "Let the team know how they can help." },
+  { name: "Housekeeping", description: "Request room cleaning and housekeeping." },
+  { name: "Airport Transfer", description: "Ask the hotel team to help arrange airport transport." },
+  { name: "Maintenance", description: "Request assistance with room equipment." },
+  { name: "Room Service", description: "Request food and refreshments in your room." },
+  { name: "Extra Towels", description: "Request additional towels." },
+  { name: "Laundry", description: "Ask the hotel team about laundry assistance." },
+  { name: "Restaurant", description: "Request assistance with hotel dining." },
 ];
 
 export const roomImages = rooms.map(room => room.image);
 
 export const initialManagementStore: ManagementStore = {
   rooms,
-  services: serviceCategories.map((service, index) => ({ ...service, id: `service-${index + 1}`, active: true })),
+  services: serviceCategories.map(service => ({ ...service, id: `dataset-service-${service.name.toLowerCase().replaceAll(" ", "-")}`, active: true })),
+  catalogueSeedVersion: 1,
   loyaltyRules: [{ pointsPerNight: 10, effectiveAt: "1970-01-01T00:00:00.000Z" }],
 };
 
