@@ -32,6 +32,8 @@ export function MotionReveal() {
     function clear() {
       observer?.disconnect();
       mutations?.disconnect();
+      observer = undefined;
+      mutations = undefined;
       cancelAnimationFrame(frame);
       frame = 0;
       tracked.forEach(node => node.removeAttribute("data-gs-reveal"));
@@ -77,7 +79,7 @@ export function MotionReveal() {
       if (preference.matches || !("IntersectionObserver" in window)) return;
       observer = new IntersectionObserver(entries => {
         for (const entry of entries) {
-          if (!entry.isIntersecting || !entry.intersectionRatio) continue;
+          if (!entry.isIntersecting) continue;
           const node = entry.target as HTMLElement;
           node.setAttribute("data-gs-reveal", "shown");
           observer?.unobserve(node);
