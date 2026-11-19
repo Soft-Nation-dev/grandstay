@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { serviceCategories } from "@/data/mock";
+import { useManagement } from "@/hooks/use-management";
 import { useAuth, useAccounts } from "@/hooks/use-auth";
 import { useBookingStore } from "@/hooks/use-bookings";
 import { useExperience } from "@/hooks/use-experience";
@@ -34,6 +34,8 @@ function RequestCard({ request, guest, staff = false }: { request: ServiceReques
 
 export function GuestServices() {
   const account = useAuth();
+  const { services } = useManagement();
+  const serviceCategories = services.filter(item => item.active);
   const { bookings } = useBookingStore();
   const { requests } = useExperience();
   const [selected, setSelected] = useState("");
@@ -58,7 +60,7 @@ export function GuestServices() {
   }
   return <section className="workspace-section">
     <ExperienceHeading role="guest" title="Hotel services" description="Request assistance during your stay and follow the progress here." />
-    {booking ? <form className="panel experience-form" onSubmit={submit}><h3>Request a service</h3><BookingPicker bookings={active} value={booking.id} onChange={setSelected} /><label className="auth-field"><span>Service category</span><select name="category">{serviceCategories.map(item => <option key={item.name}>{item.name}</option>)}</select></label><label className="auth-field"><span>Request details (optional)</span><textarea name="details" placeholder="Tell us what you need…" maxLength={500} rows={3} /></label><p className="muted">Requests do not initiate a payment. Please use fictional information only.</p>{error && <p className="auth-error" role="alert">{error}</p>}{success && <p className="auth-notice" role="status"><Icon name="check" />Request received by the demo system.</p>}<button className="button button-primary" type="submit">Submit request <Icon name="arrow" /></button></form> : <EmptyExperience title="No active stay" description="Service requests become available during your reserved stay. You can contact the concierge at any time."><Link href="/guest/concierge" className="button button-soft">Contact concierge</Link></EmptyExperience>}
+    {booking ? <form className="panel experience-form" onSubmit={submit}><h3>Request a service</h3><BookingPicker bookings={active} value={booking.id} onChange={setSelected} /><label className="auth-field"><span>Service category</span><select name="category">{serviceCategories.map(item => <option key={item.name}>{item.name}</option>)}</select></label><label className="auth-field"><span>Request details (optional)</span><textarea name="details" placeholder="Tell us what you need…" maxLength={500} rows={3} /></label>{!serviceCategories.length && <p className="muted">No services are currently available. Contact the concierge for assistance.</p>}<p className="muted">Requests do not initiate a payment. Please use fictional information only.</p>{error && <p className="auth-error" role="alert">{error}</p>}{success && <p className="auth-notice" role="status"><Icon name="check" />Request received by the demo system.</p>}<button className="button button-primary" type="submit" disabled={!serviceCategories.length}>Submit request <Icon name="arrow" /></button></form> : <EmptyExperience title="No active stay" description="Service requests become available during your reserved stay. You can contact the concierge at any time."><Link href="/guest/concierge" className="button button-soft">Contact concierge</Link></EmptyExperience>}
     <h3>My requests</h3>{own.length ? <div className="workspace-grid">{own.map(request => <RequestCard key={request.id} request={request} />)}</div> : <p className="muted">You haven’t submitted any service requests yet.</p>}
   </section>;
 }
