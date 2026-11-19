@@ -1,3 +1,4 @@
+import type { DocumentKind, ExperienceStore } from "@/types/experience";
 import type { BookingStore } from "@/types/booking";
 import type { Account } from "@/types/auth";
 import type { Room, RoomReservation } from "@/types/hotel";
@@ -43,3 +44,15 @@ export const demoAccounts: Account[] = [
 ];
 
 export const initialBookingStore: BookingStore = { bookings: [], audit: [] };
+
+export const initialExperienceStore: ExperienceStore = { checkIns: [], requests: [], messages: [] };
+
+export const documentKinds: DocumentKind[] = ["Passport", "National ID", "Driver's licence"];
+
+export const serviceCategories = [
+  { name: "Room cleaning", description: "Request housekeeping for your room." },
+  { name: "Room amenities", description: "Request towels or other room essentials." },
+  { name: "Food & beverages", description: "Ask hotel staff about dining assistance." },
+  { name: "Technical support", description: "Get assistance with room equipment." },
+  { name: "Other assistance", description: "Let the team know how they can help." },
+];
