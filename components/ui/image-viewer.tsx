@@ -17,9 +17,11 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const trigger = useRef<HTMLButtonElement | null>(null);
+  const position = useRef({ left: 0, top: 0 });
 
   const open = useCallback<OpenPhoto>((image, button) => {
     trigger.current = button;
+    position.current = { left: window.scrollX, top: window.scrollY };
     setPhoto(image);
   }, []);
 
@@ -32,15 +34,17 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
     if (!photo || !element) return;
     const previous = document.documentElement.style.overflow;
     const previousBody = document.body.style.overflow;
-    element.showModal();
+    const saved = position.current;
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
+    element.showModal();
     closeButton.current?.focus({ preventScroll: true });
     return () => {
       element.close();
       document.documentElement.style.overflow = previous;
       document.body.style.overflow = previousBody;
       trigger.current?.focus({ preventScroll: true });
+      window.scrollTo({ ...saved, behavior: "auto" });
     };
   }, [photo]);
 
