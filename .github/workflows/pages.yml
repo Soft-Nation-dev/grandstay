@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 15
     env:
       GITHUB_PAGES: "true"
-      NEXT_PUBLIC_BASE_PATH: /grandstay
+      NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,13 +29,13 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Test the static site
         env:
-          SMOKE_BASE_URL: http://127.0.0.1:3000/grandstay
+          SMOKE_BASE_URL: http://127.0.0.1:3000/${{ github.event.repository.name }}
         run: |
-          mkdir -p /tmp/grandstay-pages
-          cp -a out /tmp/grandstay-pages/grandstay
-          python3 -m http.server 3000 --bind 127.0.0.1 --directory /tmp/grandstay-pages > /tmp/grandstay-pages.log 2>&1 &
+          mkdir -p /tmp/guestly-pages
+          cp -a out "/tmp/guestly-pages${NEXT_PUBLIC_BASE_PATH}"
+          python3 -m http.server 3000 --bind 127.0.0.1 --directory /tmp/guestly-pages > /tmp/guestly-pages.log 2>&1 &
           for attempt in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:3000/grandstay/ > /dev/null; then break; fi
+            if curl -fsS "http://127.0.0.1:3000${NEXT_PUBLIC_BASE_PATH}/" > /dev/null; then break; fi
             sleep 1
           done
           node tests/frontend-smoke.mjs
@@ -61,6 +61,6 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
-      - name: Publish GrandStay
+      - name: Publish Guestly
         id: deployment
         uses: actions/deploy-pages@v4
