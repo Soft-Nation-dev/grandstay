@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/hotel-image";
 import { useState, type FormEvent, type ChangeEvent } from "react";
 import { roomImages } from "@/data/mock";
 import { useManagement } from "@/hooks/use-management";
