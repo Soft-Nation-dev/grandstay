@@ -75,6 +75,9 @@ async function attachID() {
 try {
   await login('guest');
   const booking = await createConfirmedBooking();
+  await visit('/guest/bookings');
+  await page.getByRole('button', { name: 'Refresh records' }).click();
+  await page.getByText(booking.id).first().waitFor();
   await visit('/guest/access');
   await page.getByRole('heading', { name: 'No approved check-in yet' }).waitFor();
   await visit('/guest/check-in?booking=' + booking.id);
