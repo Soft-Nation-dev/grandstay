@@ -70,3 +70,10 @@ Built with Next.js, React, TypeScript and Tailwind CSS.
 When `NEXT_PUBLIC_API_URL` is set to the deployed backend origin, Guestly uses backend registration, login, token-checked sessions, profile editing and super-admin team management. The browser demo accounts are hidden in live-API mode. JWTs are stored for the browser tab session, then checked against `GET /api/v1/auth/me` whenever the app loads. Logging out calls the backend revocation endpoint; role changes or account deactivation invalidate existing sessions.
 
 The backend super admin is created once by the backend developer using the dedicated CLI command, never through public guest registration. All guest, staff, manager and admin account permissions are verified by the backend. Leave `NEXT_PUBLIC_API_URL` unset for the existing standalone preview while other feature groups are being integrated.
+
+
+## Group 3: live hotel and rooms
+
+When NEXT_PUBLIC_API_URL is configured, the home hero uses GET /api/v1/hotels/current, while featured rooms, room discovery, room details and availability come from /api/v1/rooms and /api/v1/rooms/availability. The manager room screen sends new room types and room edits to the backend; photo uploads use the protected Cloudinary route with real multipart files. The manager can also update the single hotel profile.
+
+Run npm run seed in the backend once before trying its live room catalogue. The command creates the original six room types without overwriting rooms already managed in MongoDB. Until Group 4 supplies reservation creation and verified payments, live-API mode does not allow simulated checkout. When no backend URL is configured, the current standalone demo, local management state and simulated booking flow remain as before.

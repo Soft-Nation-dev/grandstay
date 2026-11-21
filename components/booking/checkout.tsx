@@ -11,6 +11,7 @@ import { useBookingStore } from "@/hooks/use-bookings";
 import { bookingQuery, readStay } from "@/lib/booking-query";
 import { formatMoney } from "@/lib/format";
 import { completeDemoPayment, quoteBooking } from "@/services/bookings";
+import { apiConfigured } from "@/services/api-client";
 import type { BookingInput, PaymentOutcome } from "@/types/booking";
 
 function BookingSummary({ input, quote }: { input: BookingInput; quote: ReturnType<typeof quoteBooking> }) {
@@ -66,6 +67,7 @@ export function Checkout() {
     }
   }
 
+  if (apiConfigured()) return <div className="panel empty-state"><Icon name="calendar" /><h1>Online booking is coming soon</h1><p>Room availability is live, but reservations and payment verification will be connected in the next integration group. No booking or payment has been made.</p><Link className="button button-primary" href="/rooms">Explore rooms</Link></div>;
   if (!quote || !input) return <div className="panel empty-state"><Icon name="bed" /><h1>Room unavailable</h1><p>Review your dates and choose an available room.</p><Link className="button button-primary" href="/rooms">Explore rooms</Link></div>;
   const returnPath = `/checkout?${bookingQuery(input)}`;
   const loginQuery = new URLSearchParams({ next: returnPath });

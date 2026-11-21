@@ -18,7 +18,7 @@ function token() {
   return sessionStorage.getItem(tokenKey);
 }
 
-async function authorizedRequest<T>(path: string, options: ApiRequestOptions = {}) {
+export async function authorizedRequest<T>(path: string, options: ApiRequestOptions = {}) {
   const currentToken = token();
   if (!currentToken) throw new Error('Sign in to continue.');
   try {

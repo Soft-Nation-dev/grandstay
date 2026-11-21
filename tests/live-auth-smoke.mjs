@@ -26,6 +26,23 @@ async function logout() {
 }
 
 try {
+  await visit('/');
+  await page.getByRole('heading', { name: 'Your comfort, our priority.' }).waitFor();
+  await page.getByRole('heading', { name: 'Standard Cozy Haven' }).waitFor();
+  await visit('/rooms');
+  await page.getByRole('heading', { name: 'Rooms & suites', level: 1 }).waitFor();
+  await page.getByRole('heading', { name: 'Standard Cozy Haven' }).waitFor();
+  const checkIn = new Date(Date.now() + 4 * 86400000).toISOString().slice(0, 10);
+  const checkOut = new Date(Date.now() + 6 * 86400000).toISOString().slice(0, 10);
+  await page.getByLabel('Check-in', { exact: true }).fill(checkIn);
+  await page.getByLabel('Check-out', { exact: true }).fill(checkOut);
+  await page.getByRole('button', { name: 'Search rooms' }).click();
+  await page.getByText('2 room types available').waitFor();
+  await page.getByRole('link', { name: 'View room' }).first().click();
+  await page.getByText('2 remaining').waitFor();
+  assert.equal(await page.getByRole('link', { name: 'Reserve room' }).count(), 0);
+  await visit('/checkout');
+  await page.getByRole('heading', { name: 'Online booking is coming soon' }).waitFor();
   await visit('/login');
   assert.equal(await page.getByText('Preview accounts').count(), 0);
 
@@ -56,7 +73,22 @@ try {
 
   await login('manager');
   await page.getByRole('heading', { name: 'Welcome, Tunde.' }).waitFor();
+  await visit('/manager/rooms');
+  await page.getByRole('heading', { name: 'Room management' }).waitFor();
+  await page.getByRole('button', { name: 'Edit hotel' }).click();
+  await page.locator('input[name="tagline"]').fill('Your Lagos home away from home.');
+  await page.getByRole('button', { name: 'Save hotel details' }).click();
+  await page.getByText('Hotel details updated.').waitFor();
+  const roomCard = page.locator('.management-panel').filter({ hasText: 'Standard Cozy Haven' }).first();
+  await roomCard.getByRole('button', { name: 'Edit room' }).click();
+  await roomCard.locator('input[name="nightlyRate"]').fill('56000');
+  await roomCard.getByRole('button', { name: 'Save room' }).click();
+  await roomCard.getByText('₦56,000').waitFor();
   await logout();
+  await visit('/');
+  await page.getByRole('heading', { name: 'Your Lagos home away from home.' }).waitFor();
+  await visit('/rooms');
+  await page.getByText('₦56,000').first().waitFor();
 
   await login('admin');
   await page.getByRole('heading', { name: 'Team access management' }).waitFor();
