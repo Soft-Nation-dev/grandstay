@@ -15,7 +15,7 @@ export function latestConversations(messages: ConciergeMessage[]) {
 }
 
 export function staffSnapshot(bookings: Booking[], checkIns: CheckIn[], requests: ServiceRequest[], messages: ConciergeMessage[], today: string) {
-  const arrivals = bookings.filter(item => item.checkIn >= today).sort((a, b) => a.checkIn.localeCompare(b.checkIn));
+  const arrivals = bookings.filter(item => item.status === "confirmed" && item.checkIn >= today).sort((a, b) => a.checkIn.localeCompare(b.checkIn));
   const pending = checkIns.filter(item => item.status === "pending" && bookings.some(booking => booking.id === item.bookingId && booking.checkOut > today)).sort((a, b) => a.submittedAt.localeCompare(b.submittedAt));
   const openRequests = requests.filter(item => item.status !== "done").sort((a, b) => (a.history[0]?.at ?? "").localeCompare(b.history[0]?.at ?? ""));
   const conversations = latestConversations(messages);

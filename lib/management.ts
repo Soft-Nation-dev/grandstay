@@ -15,9 +15,10 @@ export function loyaltyAwards(bookings: Booking[], checkIns: CheckIn[], rules: L
 }
 
 export function bookingMetrics(bookings: Booking[], audit: BookingAudit[]) {
-  const attempts = new Set(audit.filter(item => item.event === "payment_started").map(item => item.reference)).size;
-  const verified = new Set(audit.filter(item => item.event === "payment_verified").map(item => item.reference)).size;
-  return { total: bookings.length, revenue: bookings.reduce((sum, item) => sum + item.amount, 0), attempts, verified, conversion: attempts ? Math.round(verified / attempts * 100) : null };
+  const attempts = audit.filter(item => ["payment_started", "payment.initialized"].includes(item.event)).length;
+  const verified = audit.filter(item => ["payment_verified", "payment.succeeded"].includes(item.event)).length;
+  const confirmed = bookings.filter(item => item.status === "confirmed");
+  return { total: confirmed.length, revenue: confirmed.reduce((sum, item) => sum + item.amount, 0), attempts, verified, conversion: attempts ? Math.round(verified / attempts * 100) : null };
 }
 
 export function serviceMetrics(requests: ServiceRequest[]) {

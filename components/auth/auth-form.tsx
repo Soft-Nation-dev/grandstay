@@ -4,7 +4,7 @@ import Link from "@/components/navigation/app-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { checkoutReturn } from "@/lib/booking-query";
+import { safeAuthReturn } from "@/lib/booking-query";
 import { demoAccounts, demoPassword } from "@/data/mock";
 import { apiConfigured } from "@/services/api-client";
 import { Icon } from "@/components/ui/icon";
@@ -16,7 +16,7 @@ import { roleLabels, roleRoutes } from "@/types/auth";
 export function AuthForm({ register = false }: { register?: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
-  const next = checkoutReturn(params.get("next"));
+  const next = safeAuthReturn(params.get("next"), apiConfigured());
   const nextQuery = next ? `?${new URLSearchParams({ next })}` : "";
   const account = useAuth();
   const accounts = useAccounts();

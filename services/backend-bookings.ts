@@ -149,7 +149,8 @@ export async function createBackendHold(input: BookingInput, requestId: string) 
   const booking = await authorizedRequest<Booking>("/api/v1/bookings", {
     method: "POST", body: { ...input, requestId },
   });
-  update({ bookings: [booking, ...state.bookings.filter(item => item.id !== booking.id)], total: (state.total || 0) + 1 });
+  const existed = state.bookings.some(item => item.id === booking.id);
+  update({ bookings: [booking, ...state.bookings.filter(item => item.id !== booking.id)], total: (state.total || 0) + (existed ? 0 : 1) });
   return booking;
 }
 
