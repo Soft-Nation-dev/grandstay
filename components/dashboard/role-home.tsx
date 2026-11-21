@@ -12,7 +12,7 @@ type WorkspaceItem = { title: string; description: string; icon: IconName; href?
 const workspaces: Record<Exclude<Role, "admin">, WorkspaceItem[]> = {
   guest: [
     { title: "Explore rooms", description: "Browse rooms and find availability for your next stay.", icon: "bed", href: "/rooms" },
-    { title: "My bookings", description: "View your confirmed reservations.", icon: "calendar", href: "/guest/bookings" },
+    { title: "My bookings", description: "View your reservations and payment status.", icon: "calendar", href: "/guest/bookings" },
     { title: "Digital check-in", description: "Submit your arrival details before you travel.", icon: "key", href: "/guest/check-in" },
     { title: "Concierge", description: "Contact hotel staff with questions about your stay.", icon: "chat", href: "/guest/concierge" },
     { title: "Service requests", description: "Request hotel assistance and track its progress.", icon: "list", href: "/guest/services" },

@@ -53,8 +53,7 @@ function RoomDetail({ room, stay, back, bookings, liveAvailability, checking, av
           live && availabilityError ? <p className="form-error">{availabilityError}</p> :
           available ? <><span className="availability-label"><Icon name="check" /> Available for your dates{live ? " · " + quantity + " remaining" : ""}</span>
             <div className="estimate"><span>{nights} {nights === 1 ? "night" : "nights"}</span><strong>{formatMoney(room.nightlyRate * nights)}</strong></div>
-            {live ? <p className="muted">This is an availability estimate. Booking and secure payment will open after the next integration stage.</p> :
-              <Link className="button button-primary" href={"/checkout?" + bookingQuery({ ...stay, roomId: room.id })}>Reserve room <Icon name="arrow" /></Link>}</> :
+            <Link className="button button-primary" href={"/checkout?" + bookingQuery({ ...stay, roomId: room.id })}>Reserve room <Icon name="arrow" /></Link></> :
             <p className="form-error">This room does not accommodate your selected stay. Try other dates or fewer guests.</p>}
         </div>}
       </aside>

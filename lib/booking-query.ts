@@ -20,3 +20,14 @@ export function checkoutReturn(value: string | null) {
   const roomId = query.get("room");
   return stay && roomId ? `/checkout?${bookingQuery({ ...stay, roomId })}` : null;
 }
+
+
+export function safeAuthReturn(value: string | null, allowPayments = false) {
+  const checkout = checkoutReturn(value);
+  if (checkout) return checkout;
+  if (!allowPayments || !value || !value.startsWith("/payment/return?")) return null;
+  const query = new URLSearchParams(value.slice("/payment/return?".length));
+  const reference = query.get("reference");
+  if (!reference || !/^[a-zA-Z0-9_-]{5,100}$/.test(reference)) return null;
+  return "/payment/return?reference=" + encodeURIComponent(reference);
+}

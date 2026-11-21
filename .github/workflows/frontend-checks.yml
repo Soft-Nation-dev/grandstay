@@ -42,3 +42,4 @@ jobs:
             sleep 1
           done
           node tests/live-auth-smoke.mjs
+          node tests/live-bookings-smoke.mjs
