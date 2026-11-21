@@ -17,17 +17,19 @@ export function PaymentReturn() {
   const [checking, setChecking] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const reference = params.get("reference") || params.get("trxref") || "";
+  const accountId = account?.id;
+  const accountRole = account?.role;
   const validReference = /^[a-zA-Z0-9_-]{5,100}$/.test(reference);
 
   useEffect(() => {
-    if (!apiConfigured() || account?.role !== "guest" || !validReference) return;
+    if (!apiConfigured() || accountRole !== "guest" || !accountId || !validReference) return;
     const controller = new AbortController();
     void verifyBackendPayment(reference).then(value => {
       if (controller.signal.aborted) return;
       setResult(value);
       setError("");
       if (value.status === "success" && value.bookingStatus === "confirmed") {
-        void refreshBackendBookings(account, true).catch(() => {});
+        void refreshBackendBookings({ id: accountId, role: "guest" }, true).catch(() => {});
       }
     }).catch(cause => {
       if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Could not verify this payment.");
@@ -35,7 +37,7 @@ export function PaymentReturn() {
       if (!controller.signal.aborted) setChecking(false);
     });
     return () => controller.abort();
-  }, [account?.id, account?.role, reference, validReference, attempt]);
+  }, [accountId, accountRole, reference, validReference, attempt]);
 
   if (!apiConfigured()) return <div className="panel empty-state"><Icon name="info" /><h1>Payment unavailable in preview mode</h1><Link href="/rooms" className="button button-primary">Explore rooms</Link></div>;
   if (!validReference) return <div className="panel empty-state"><Icon name="shield" /><h1>Payment reference missing</h1><p>No reservation has been confirmed on this page.</p><Link href="/guest/bookings" className="button button-primary">My bookings</Link></div>;
