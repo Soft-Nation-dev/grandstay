@@ -1,4 +1,4 @@
-import { apiConfigured, apiRequestBlob } from "@/services/api-client";
+import { apiConfigured } from "@/services/api-client";
 import { authorizedRequest, authorizedDownload } from "@/services/backend-auth";
 import type { Account } from "@/types/auth";
 import type { CheckIn, DocumentKind } from "@/types/experience";

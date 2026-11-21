@@ -5,8 +5,15 @@ export type CheckIn = Omit<CheckInInput, "sampleSelected"> & {
   guestId: string;
   status: CheckInStatus;
   submittedAt: string;
-  reviewedAt?: string;
-  reviewNote?: string;
+  reviewedAt?: string | null;
+  reviewNote?: string | null;
+  id?: string;
+  guestName?: string;
+  roomName?: string;
+  checkIn?: string;
+  checkOut?: string;
+  documentAvailable?: boolean;
+  history?: { status: CheckInStatus; at: string }[];
   accessCode?: string;
 };
 export type RequestStatus = "received" | "in-progress" | "done";
