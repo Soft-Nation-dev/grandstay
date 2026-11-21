@@ -70,8 +70,7 @@ export function RoomBrowser() {
   const [category, setCategory] = useState<(typeof categories)[number]>("All");
   const [sort, setSort] = useState("recommended");
   const [availability, setAvailability] = useState<{ key: string; items: LiveRoom[] } | null>(null);
-  const [checking, setChecking] = useState(false);
-  const [availabilityError, setAvailabilityError] = useState("");
+  const [availabilityFailure, setAvailabilityFailure] = useState<{ key: string; message: string } | null>(null);
   const live = apiConfigured();
   const checkIn = params.get("checkIn") ?? "";
   const checkOut = params.get("checkOut") ?? "";
@@ -80,6 +79,7 @@ export function RoomBrowser() {
   const stay = requestedStay && requestedStay.checkIn >= localDate() ? requestedStay : undefined;
   const searchKey = stay ? [stay.checkIn, stay.checkOut, stay.guests].join("|") : "";
   const currentAvailability = availability?.key === searchKey ? availability.items : null;
+  const availabilityError = availabilityFailure?.key === searchKey ? availabilityFailure.message : "";
   const roomId = params.get("room");
   const query = new URLSearchParams();
   if (stay) Object.entries(stay).forEach(([key, value]) => query.set(key, String(value)));
@@ -91,14 +91,11 @@ export function RoomBrowser() {
     if (!live || !searchKey) return;
     const [from, to, guestCount] = searchKey.split("|");
     const controller = new AbortController();
-    setChecking(true);
-    setAvailabilityError("");
     void fetchRoomAvailability({ checkIn: from, checkOut: to, guests: Number(guestCount) }, controller.signal)
       .then(items => { if (!controller.signal.aborted) setAvailability({ key: searchKey, items }); })
       .catch(error => {
-        if (!controller.signal.aborted) setAvailabilityError(error instanceof Error ? error.message : "Unable to check availability.");
-      })
-      .finally(() => { if (!controller.signal.aborted) setChecking(false); });
+        if (!controller.signal.aborted) setAvailabilityFailure({ key: searchKey, message: error instanceof Error ? error.message : "Unable to check availability." });
+      });
     return () => controller.abort();
   }, [live, searchKey]);
 
@@ -111,7 +108,7 @@ export function RoomBrowser() {
   }
 
   if (room) return <RoomDetail room={room} stay={stay} back={back} bookings={bookings}
-    liveAvailability={currentAvailability} checking={checking || (live && Boolean(stay) && !currentAvailability && !availabilityError)}
+    liveAvailability={currentAvailability} checking={live && Boolean(stay) && !currentAvailability && !availabilityError}
     availabilityError={availabilityError} />;
 
   const source = live && stay ? (currentAvailability ?? []) : stay ? findRooms(stay, bookings, rooms) : rooms;
@@ -122,7 +119,7 @@ export function RoomBrowser() {
     {roomId && <p className="form-error" role="alert">We could not find that room. Explore our available rooms below.</p>}
     <section className="panel search-panel" aria-label="Find rooms"><StaySearch key={queryString} initial={stay} /></section>
     {!!(checkIn || checkOut) && !stay && <p className="form-error" role="alert">Enter valid dates and guest count to check availability.</p>}
-    {live && stay && (checking || !currentAvailability && !availabilityError) && <p role="status">Checking live availability…</p>}
+    {live && stay && !currentAvailability && !availabilityError && <p role="status">Checking live availability…</p>}
     {live && availabilityError && <p className="form-error" role="alert">{availabilityError}</p>}
     <div className="results-toolbar">
       <div className="filter-tabs" aria-label="Room categories">{categories.map(item => <button type="button" key={item} aria-pressed={category === item} className={category === item ? "filter-active" : ""} onClick={() => setCategory(item)}>{item}</button>)}</div>
