@@ -77,7 +77,7 @@ try {
   const revoke = await fetch('http://127.0.0.1:4100/__test/revoke', {
     method: 'POST', headers: { 'X-Email': 'admin@guestly.test' },
   });
-  assert.ok(revoke.ok());
+  assert.ok(revoke.ok);
   await page.getByRole('button', { name: 'Edit profile' }).click();
   await page.getByRole('button', { name: 'Save profile' }).click();
   await page.getByRole('heading', { name: 'Sign in to continue' }).waitFor();
