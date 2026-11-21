@@ -113,7 +113,7 @@ try {
 
   await visit('/staff/concierge?view=waiting');
   await page.getByRole('heading', { name: 'Concierge inbox' }).waitFor();
-  await page.getByText('Alex Morgan').first().waitFor();
+  await page.getByRole('link', { name: /Morgan/ }).first().waitFor();
   await page.getByRole('textbox', { name: 'Message' }).fill('Yes, we can assist. Housekeeping is on the way.');
   await page.getByRole('button', { name: 'Send message' }).click();
   await page.getByText('Yes, we can assist. Housekeeping is on the way.').waitFor();
