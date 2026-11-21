@@ -41,7 +41,7 @@ When the backend is ready, we can connect it through the existing services and h
 
 ## Backend connection
 
-The frontend now includes a typed API client in `services/api-client.ts`. Its request and error handling follow the backend's existing `{ success, message, data }` response format. For local integration, copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_API_URL` to the backend origin, normally `http://localhost:4000`. The deployed static site does not use a backend URL yet, so the existing demonstration continues to work until each live feature is connected and tested. No backend keys or secrets belong in the frontend.
+The frontend now includes a typed API client in `services/api-client.ts`. Its request and error handling follow the backend's existing `{ success, message, data }` response format. The `hooks/use-api-request.ts` hook provides consistent loading, success and error states for future connected screens. For local integration, copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_API_URL` to the backend origin, normally `http://localhost:4000`. The deployed static site does not use a backend URL yet, so the existing demonstration continues to work until each live feature is connected and tested. No backend keys or secrets belong in the frontend.
 
 The backend API contract and CORS configuration are documented in the backend repository under `docs/api-contract.md`. Run `npm run test:api` to check the client contract without needing a deployed server.
 
