@@ -40,7 +40,7 @@ try {
   await page.getByText('2 room types available').waitFor();
   await page.getByRole('link', { name: 'View room' }).first().click();
   await page.getByText('2 remaining').waitFor();
-  assert.equal(await page.getByRole('link', { name: 'Reserve room' }).count(), 0);
+  assert.equal(await page.getByRole('link', { name: 'Reserve room' }).count(), 1);
   await visit('/checkout');
   await page.getByRole('heading', { name: 'Room unavailable' }).waitFor();
   await visit('/login');
