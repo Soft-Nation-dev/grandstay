@@ -5,6 +5,25 @@ const users = new Map();
 const sessions = new Map();
 const revoked = new Set();
 const sharedPassword = 'TestPassword123';
+let hotel = {
+  id: 'primary', name: 'Guestly', tagline: 'Your comfort, our priority.',
+  description: 'A more thoughtful stay, from the moment you book to the moment you leave.',
+  location: 'Lagos, Nigeria', currency: 'NGN', heroImage: '/images/deluxe-executive-suite.jpg',
+};
+const rooms = [
+  {
+    id: 'standard-cozy-haven', name: 'Standard Cozy Haven', category: 'Standard',
+    image: '/images/standard-cozy-haven.jpg', nightlyRate: 55000, capacity: 2,
+    size: 34, bed: 'Queen bed', view: 'City view', amenities: ['Wi-Fi'],
+    description: 'A welcoming room', inventory: 3, featured: true,
+  },
+  {
+    id: 'deluxe-executive-suite', name: 'Deluxe Executive Suite', category: 'Executive',
+    image: '/images/deluxe-executive-suite.jpg', nightlyRate: 85000, capacity: 2,
+    size: 62, bed: 'King bed', view: 'City view', amenities: ['High-speed Wi-Fi'],
+    description: 'Room with a view', inventory: 2, featured: true,
+  },
+];
 
 function addUser(firstName, lastName, email, role, password = sharedPassword) {
   const user = {
@@ -80,6 +99,19 @@ const server = http.createServer(async (req, res) => {
       }
       return json(res, 200, true, 'Revoked');
     }
+    if (url.pathname === '/api/v1/hotels/current' && req.method === 'GET') {
+      return json(res, 200, true, 'Hotel retrieved', hotel);
+    }
+    if (url.pathname === '/api/v1/rooms' && req.method === 'GET') {
+      return json(res, 200, true, 'Rooms retrieved', rooms);
+    }
+    if (url.pathname === '/api/v1/rooms/availability' && req.method === 'GET') {
+      const guests = Number(url.searchParams.get('guests'));
+      const available = rooms.filter(room => room.capacity >= guests && room.inventory > 0)
+        .map(room => ({ ...room, availableInventory: Math.max(0, room.inventory - 1) }))
+        .filter(room => room.availableInventory > 0);
+      return json(res, 200, true, 'Availability retrieved', available);
+    }
     const active = session(req);
     if (!active) return json(res, 401, false, 'Invalid or expired session');
     if (url.pathname === '/api/v1/auth/me' && req.method === 'GET') {
@@ -95,6 +127,27 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/v1/auth/logout' && req.method === 'POST') {
       revoked.add(active.token);
       return json(res, 200, true, 'Signed out');
+    }
+    if (url.pathname === '/api/v1/hotels/current' && req.method === 'PATCH') {
+      if (active.user.role !== 'manager') return json(res, 403, false, 'Access denied');
+      const fields = await requestBody(req);
+      hotel = { ...hotel, ...fields };
+      return json(res, 200, true, 'Hotel updated', hotel);
+    }
+    if (url.pathname === '/api/v1/rooms' && req.method === 'POST') {
+      if (active.user.role !== 'manager') return json(res, 403, false, 'Access denied');
+      const fields = await requestBody(req);
+      const room = { ...fields, id: fields.name.toLowerCase().replaceAll(/\s+/g, '-') + '-new' };
+      rooms.push(room);
+      return json(res, 201, true, 'Room created', room);
+    }
+    const roomMatch = url.pathname.match(/^\/api\/v1\/rooms\/([a-z0-9-]+)$/);
+    if (roomMatch && req.method === 'PATCH') {
+      if (active.user.role !== 'manager') return json(res, 403, false, 'Access denied');
+      const room = rooms.find(item => item.id === roomMatch[1]);
+      if (!room) return json(res, 404, false, 'Room type not found');
+      Object.assign(room, await requestBody(req));
+      return json(res, 200, true, 'Room updated', room);
     }
     if (active.user.role !== 'admin') return json(res, 403, false, 'Access denied');
     if (url.pathname === '/api/v1/users/team' && req.method === 'GET') {
