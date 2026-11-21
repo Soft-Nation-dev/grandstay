@@ -2,6 +2,7 @@
 
 import Link from "@/components/navigation/app-link";
 import { DatasetOverview } from "@/components/dataset/overview";
+import { apiConfigured } from "@/services/api-client";
 import { useBookingStore } from "@/hooks/use-bookings";
 import { useExperience } from "@/hooks/use-experience";
 import { useManagement } from "@/hooks/use-management";
@@ -10,7 +11,7 @@ import { formatMoney } from "@/lib/format";
 import { hotelDate } from "@/services/experience";
 import { Icon, type IconName } from "@/components/ui/icon";
 
-export function ManagerOverview() {
+function DemoManagerOverview() {
   const { bookings, audit } = useBookingStore();
   const { requests } = useExperience();
   const { rooms } = useManagement();
@@ -44,4 +45,23 @@ export function ManagerOverview() {
       <section className="panel management-panel"><div className="staff-section-heading"><h2>Hotel configuration</h2></div><Link className="management-stat" href="/manager/rooms"><span>Room catalogue</span><Icon name="arrow" /></Link><Link className="management-stat" href="/manager/services"><span>Service catalogue</span><Icon name="arrow" /></Link><Link className="management-stat" href="/manager/loyalty"><span>Loyalty rules</span><Icon name="arrow" /></Link></section>
     </div>
   </div>;
+}
+
+
+function LiveManagerOverview() {
+  return <div className="staff-overview">
+    <DatasetOverview />
+    <section className="panel management-panel">
+      <h2>Operational tools</h2>
+      <p className="muted">Live KPIs above come from the backend's complete records, not the first page of locally loaded bookings. Historical records are reported separately.</p>
+      <div className="management-stat"><Link href="/manager/bookings">Live bookings, verified payments and source booking records <Icon name="arrow" /></Link></div>
+      <div className="management-stat"><Link href="/manager/services">Live service requests and historical service data <Icon name="arrow" /></Link></div>
+      <div className="management-stat"><Link href="/manager/loyalty">Verified loyalty awards and rule history <Icon name="arrow" /></Link></div>
+      <div className="management-stat"><Link href="/manager/rooms">Room inventory management <Icon name="arrow" /></Link></div>
+    </section>
+  </div>;
+}
+
+export function ManagerOverview() {
+  return apiConfigured() ? <LiveManagerOverview /> : <DemoManagerOverview />;
 }

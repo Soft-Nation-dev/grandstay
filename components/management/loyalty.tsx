@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { apiConfigured } from "@/services/api-client";
+import { LiveLoyalty } from "@/components/management/live-loyalty";
 import { datasetGuestId, recordedBookings } from "@/services/hotel-dataset";
 import { useAuth } from "@/hooks/use-auth";
 import { useBookingStore } from "@/hooks/use-bookings";
@@ -11,7 +13,7 @@ import { loyaltyAwards } from "@/lib/management";
 import { Icon } from "@/components/ui/icon";
 import { formatMoment } from "@/components/experience/shared";
 
-export function Loyalty({ manager = false }: { manager?: boolean }) {
+function DemoLoyalty({ manager = false }: { manager?: boolean }) {
   const account = useAuth();
   const { bookings } = useBookingStore();
   const { checkIns } = useExperience();
@@ -36,4 +38,9 @@ export function Loyalty({ manager = false }: { manager?: boolean }) {
     {manager && <section className="panel management-panel"><h3>Rule history</h3>{[...loyaltyRules].reverse().map(rule => <div className="management-stat" key={rule.effectiveAt}><span>{rule.effectiveAt.startsWith("1970") ? "Initial earning rule" : formatMoment(rule.effectiveAt)}</span><strong>{rule.pointsPerNight} pts/night</strong></div>)}</section>}
     
   </section>;
+}
+
+
+export function Loyalty({ manager = false }: { manager?: boolean }) {
+  return apiConfigured() ? <LiveLoyalty manager={manager} /> : <DemoLoyalty manager={manager} />;
 }

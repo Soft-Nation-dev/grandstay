@@ -3,13 +3,15 @@
 import Link from "@/components/navigation/app-link";
 import { datasetGuestId, recordedBookings } from "@/services/hotel-dataset";
 import { useAuth } from "@/hooks/use-auth";
+import { apiConfigured } from "@/services/api-client";
+import { LiveRecommendedRooms } from "@/components/public/live-recommended-rooms";
 import { useBookingStore } from "@/hooks/use-bookings";
 import { useManagement } from "@/hooks/use-management";
 import { recommendRooms } from "@/lib/recommendations";
 import { RoomCard } from "@/components/public/room-card";
 import { Icon } from "@/components/ui/icon";
 
-export function RecommendedRooms() {
+function DemoRecommendedRooms() {
   const account = useAuth();
   const { bookings } = useBookingStore();
   const { rooms } = useManagement();
@@ -22,4 +24,9 @@ export function RecommendedRooms() {
   if (!recommended.length) return null;
   const returning = history.length > 0 || bookings.some(item => item.guestId === account.id);
   return <section className="workspace-section"><div className="section-heading"><div><span className="eyebrow">Your next stay</span><h2>Recommended for you</h2><p className="muted">{returning ? "Inspired by your previous reservations." : "Explore a selection of our rooms and suites."}</p></div><Link className="text-link" href="/rooms">All rooms <Icon name="arrow" /></Link></div><div className="room-grid">{recommended.map(room => <RoomCard key={room.id} room={room} />)}</div></section>;
+}
+
+
+export function RecommendedRooms() {
+  return apiConfigured() ? <LiveRecommendedRooms /> : <DemoRecommendedRooms />;
 }
