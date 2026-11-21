@@ -25,7 +25,8 @@ function record(action, bookingId, paymentId) {
 }
 
 function publicCheckin(item) {
-  const { nonce, ...data } = item;
+  const data = { ...item };
+  delete data.nonce;
   return data;
 }
 
