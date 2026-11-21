@@ -78,6 +78,9 @@ try {
     method: 'POST', headers: { 'X-Email': 'admin@guestly.test' },
   });
   assert.ok(revoke.ok());
+  await page.getByRole('button', { name: 'Edit profile' }).click();
+  await page.getByRole('button', { name: 'Save profile' }).click();
+  await page.getByRole('heading', { name: 'Sign in to continue' }).waitFor();
   await page.reload();
   await page.getByRole('heading', { name: 'Sign in to continue' }).waitFor();
   assert.deepEqual(errors, []);

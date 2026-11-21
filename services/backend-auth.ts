@@ -1,4 +1,4 @@
-import { apiRequest } from '@/services/api-client';
+import { apiRequest, ApiError, type ApiRequestOptions } from '@/services/api-client';
 import { normalizeApiUser, splitAccountName, type ApiUser } from '@/services/auth-contract';
 import type { Account, Credentials, Registration, TeamAccess, TeamRegistration } from '@/types/auth';
 
@@ -16,6 +16,22 @@ function announce() {
 
 function token() {
   return sessionStorage.getItem(tokenKey);
+}
+
+async function authorizedRequest<T>(path: string, options: ApiRequestOptions = {}) {
+  const currentToken = token();
+  if (!currentToken) throw new Error('Sign in to continue.');
+  try {
+    return await apiRequest<T>(path, { ...options, token: currentToken });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      generation += 1;
+      sessionStorage.removeItem(tokenKey);
+      team = [];
+      setAccount(null);
+    }
+    throw error;
+  }
 }
 
 function setAccount(value: Account | null) {
@@ -106,7 +122,7 @@ export async function backendSignOut() {
 export async function refreshBackendTeam() {
   const currentToken = token();
   if (!currentToken || account?.role !== 'admin') throw new Error('Only the super admin can manage team accounts.');
-  const users = await apiRequest<ApiUser[]>('/api/v1/users/team', { token: currentToken });
+  const users = await authorizedRequest<ApiUser[]>('/api/v1/users/team');
   team = users.map(normalizeApiUser);
   announce();
   return team;
@@ -115,9 +131,8 @@ export async function refreshBackendTeam() {
 export async function backendProvisionTeam({ name, email, password, role }: TeamRegistration) {
   const currentToken = token();
   if (!currentToken || account?.role !== 'admin') throw new Error('Only the super admin can manage team accounts.');
-  const user = await apiRequest<ApiUser>('/api/v1/users/team', {
+  const user = await authorizedRequest<ApiUser>('/api/v1/users/team', {
     method: 'POST',
-    token: currentToken,
     body: { ...splitAccountName(name), email: email.trim().toLowerCase(), password, confirmPassword: password, role },
   });
   const created = normalizeApiUser(user);
@@ -129,9 +144,8 @@ export async function backendProvisionTeam({ name, email, password, role }: Team
 export async function backendUpdateTeamAccess(id: string, access: TeamAccess) {
   const currentToken = token();
   if (!currentToken || account?.role !== 'admin') throw new Error('Only the super admin can manage team accounts.');
-  const user = await apiRequest<ApiUser>('/api/v1/users/team/' + encodeURIComponent(id) + '/access', {
+  const user = await authorizedRequest<ApiUser>('/api/v1/users/team/' + encodeURIComponent(id) + '/access', {
     method: 'PATCH',
-    token: currentToken,
     body: { role: access.role, isActive: access.active },
   });
   const updated = normalizeApiUser(user);
@@ -143,9 +157,8 @@ export async function backendUpdateTeamAccess(id: string, access: TeamAccess) {
 export async function backendUpdateProfile({ firstName, lastName, phone }: { firstName: string; lastName: string; phone?: string }) {
   const currentToken = token();
   if (!currentToken || !account) throw new Error('Sign in to update your profile.');
-  const user = await apiRequest<ApiUser>('/api/v1/auth/me', {
+  const user = await authorizedRequest<ApiUser>('/api/v1/auth/me', {
     method: 'PATCH',
-    token: currentToken,
     body: { firstName, lastName, phone },
   });
   setAccount(normalizeApiUser(user));
