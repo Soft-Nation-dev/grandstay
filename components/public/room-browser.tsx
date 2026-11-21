@@ -88,11 +88,12 @@ export function RoomBrowser() {
   const room = roomId ? getRoom(roomId, rooms) : undefined;
 
   useEffect(() => {
-    if (!live || !stay) return;
+    if (!live || !searchKey) return;
+    const [from, to, guestCount] = searchKey.split("|");
     const controller = new AbortController();
     setChecking(true);
     setAvailabilityError("");
-    void fetchRoomAvailability(stay, controller.signal)
+    void fetchRoomAvailability({ checkIn: from, checkOut: to, guests: Number(guestCount) }, controller.signal)
       .then(items => { if (!controller.signal.aborted) setAvailability({ key: searchKey, items }); })
       .catch(error => {
         if (!controller.signal.aborted) setAvailabilityError(error instanceof Error ? error.message : "Unable to check availability.");
