@@ -125,6 +125,7 @@ export async function sendLiveMessage(account: Pick<Account, "id" | "role">, tex
     account.role === "guest" ? "/api/v1/concierge/me" : "/api/v1/concierge/" + encodeURIComponent(target),
     { method: "POST", body: { text: text.trim() } },
   );
+  if (result.sender !== "guest" && result.sender !== "staff") throw new Error("Unexpected concierge sender.");
   if (identity === account.role + ":" + account.id && (state.selectedGuestId === target || account.role === "guest")) {
     setState({
       messages: [...state.messages, result],

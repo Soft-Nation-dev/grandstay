@@ -22,6 +22,10 @@ export type ServiceRequest = {
   bookingId: string;
   guestId: string;
   category: string;
+  categoryId?: string;
+  guestName?: string;
+  roomName?: string;
+  createdAt?: string;
   details: string;
   status: RequestStatus;
   history: { status: RequestStatus; at: string }[];

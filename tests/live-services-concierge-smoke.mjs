@@ -130,7 +130,6 @@ try {
   await form.locator('textarea[name="description"]').fill('Arrange appointments with our hotel spa.');
   await form.getByRole('button', { name: 'Save service' }).click();
   await page.getByRole('heading', { name: 'Spa Assistance' }).waitFor();
-  await page.getByText('3/3 done').count();
   const catalogue = await apiCall('/api/v1/servicerequests/catalogue/manage');
   assert.ok(catalogue.data.some(item => item.name === 'Spa Assistance'));
 
