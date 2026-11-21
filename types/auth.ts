@@ -7,6 +7,7 @@ export type Account = {
   email: string;
   role: Role;
   active: boolean;
+  phone?: string;
 };
 
 export type Credentials = {

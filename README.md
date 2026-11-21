@@ -63,3 +63,10 @@ npm run build
 GitHub Actions runs the frontend checks and prepares a static GitHub Pages build. GitHub Pages hosts the frontend only; a live backend will need its own hosting. The normal Next.js development setup is kept separate from the static build. The Pages build uses the repository name to set the base path automatically.
 
 Built with Next.js, React, TypeScript and Tailwind CSS.
+
+
+## Live account integration
+
+When `NEXT_PUBLIC_API_URL` is set to the deployed backend origin, Guestly uses backend registration, login, token-checked sessions, profile editing and super-admin team management. The browser demo accounts are hidden in live-API mode. JWTs are stored for the browser tab session, then checked against `GET /api/v1/auth/me` whenever the app loads. Logging out calls the backend revocation endpoint; role changes or account deactivation invalidate existing sessions.
+
+The backend super admin is created once by the backend developer using the dedicated CLI command, never through public guest registration. All guest, staff, manager and admin account permissions are verified by the backend. Leave `NEXT_PUBLIC_API_URL` unset for the existing standalone preview while other feature groups are being integrated.
