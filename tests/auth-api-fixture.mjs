@@ -135,7 +135,8 @@ function loyaltySummary(url, guestId) {
 }
 
 function publicMessage(item) {
-  const { guestName, ...data } = item;
+  const data = { ...item };
+  delete data.guestName;
   return data;
 }
 

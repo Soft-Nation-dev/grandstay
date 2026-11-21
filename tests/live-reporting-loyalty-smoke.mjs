@@ -59,7 +59,6 @@ try {
   await page.getByRole('heading', { name: 'Recommended for you' }).waitFor();
   await visit('/guest/loyalty');
   await page.getByRole('heading', { name: 'My loyalty points' }).waitFor();
-  await page.getByText('Imported historical records never create points.').waitFor({ state: 'visible' }).catch(() => {});
 
   const checkin = await apiCall('/api/v1/checkins/me');
   assert.equal(checkin.status, 200);

@@ -12,14 +12,15 @@ export function useManagerReport() {
   const account = useAuth();
   const id = account?.id;
   const role = account?.role;
+  const loggedOut = account === null;
   useEffect(() => {
     if (!apiConfigured()) return;
     if (id && role === "manager") {
       void refreshManagerReport(id).catch(() => {});
-    } else if (account === null || role !== undefined && role !== "manager") {
+    } else if (loggedOut || role !== undefined && role !== "manager") {
       resetManagerReport();
     }
-  }, [id, role, account === null]);
+  }, [id, role, loggedOut]);
   const snapshot = useSyncExternalStore(subscribeManagerReport, managerReportSnapshot, managerReportServerSnapshot);
   return JSON.parse(snapshot) as { report: ManagementReport | null; loaded: boolean; loading: boolean; error: string };
 }
