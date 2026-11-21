@@ -5,6 +5,8 @@ import { RecordedServices } from "@/components/dataset/recorded-services";
 import { datasetGuestId } from "@/services/hotel-dataset";
 import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { apiConfigured } from "@/services/api-client";
+import { LiveGuestServices, LiveStaffServices } from "@/components/experience/live-services";
 import { useManagement } from "@/hooks/use-management";
 import { useAuth, useAccounts } from "@/hooks/use-auth";
 import { useBookingStore } from "@/hooks/use-bookings";
@@ -34,7 +36,7 @@ function RequestCard({ request, guest, staff = false }: { request: ServiceReques
   </article>;
 }
 
-export function GuestServices() {
+function DemoGuestServices() {
   const account = useAuth();
   const importedGuest = account ? datasetGuestId(account.id) : undefined;
   const { services } = useManagement();
@@ -69,7 +71,7 @@ export function GuestServices() {
   </section>;
 }
 
-export function StaffServices() {
+function DemoStaffServices() {
   const { requests } = useExperience();
   const accounts = useAccounts();
   const params = useSearchParams();
@@ -77,4 +79,13 @@ export function StaffServices() {
   const filter = params.get("view") ?? "all";
   const visible = requests.filter(item => (!focus || item.id === focus) && (filter === "all" || (filter === "open" ? item.status !== "done" : item.status === filter))).reverse();
   return <section className="workspace-section"><ExperienceHeading role="staff" title="Service requests" description="Manage guest requests and keep their status up to date." /><div className="filter-tabs" aria-label="Service request filters">{(["all", "open", ...sequence] as const).map(status => <Link key={status} aria-current={!focus && status === filter ? "true" : undefined} className={!focus && status === filter ? "filter-active" : ""} href={status === "all" ? "/staff/services" : `/staff/services?view=${status}`}>{status === "all" ? "All" : status === "open" ? "Open" : statusLabels[status]}</Link>)}</div>{focus && <Link className="text-link" href="/staff/services">Clear selected request</Link>}{visible.length ? <div className="workspace-grid">{visible.map(request => <RequestCard key={request.id} request={request} guest={accounts.find(account => account.id === request.guestId)?.name ?? "Guest"} staff />)}</div> : <EmptyExperience title="No matching requests" description="Guest service requests will appear here." />}{filter === "all" && !focus && <RecordedServices />}</section>;
+}
+
+
+export function GuestServices() {
+  return apiConfigured() ? <LiveGuestServices /> : <DemoGuestServices />;
+}
+
+export function StaffServices() {
+  return apiConfigured() ? <LiveStaffServices /> : <DemoStaffServices />;
 }

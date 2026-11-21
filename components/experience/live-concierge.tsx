@@ -12,11 +12,11 @@ import { Icon } from "@/components/ui/icon";
 import { EmptyExperience, ExperienceHeading, formatMoment } from "@/components/experience/shared";
 import type { ConciergeMessage } from "@/types/experience";
 
-function LiveConversation({ guestId, title, messages, staff }: {
-  guestId: string; title: string; messages: ConciergeMessage[]; staff: boolean;
+function LiveConversation({ guestId, title, messages, staff, selected = '' }: {
+  guestId: string; title: string; messages: ConciergeMessage[]; staff: boolean; selected?: string;
 }) {
   const account = useAuth();
-  const { messageTotal, loading } = useLiveConcierge();
+  const { messageTotal, loading } = useLiveConcierge(selected);
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -120,7 +120,7 @@ export function LiveStaffConcierge() {
         {waitingOnly && !shown.length && <p className="muted">All conversations have a staff reply.</p>}
         {id && role === "staff" && conversations.length < conversationTotal && <button type="button" className="button button-soft" disabled={loading} onClick={() => void loadMoreConversations({ id, role })}>Load more conversations</button>}
       </aside>
-      {selectedGuestId && <LiveConversation key={selectedGuestId} guestId={selectedGuestId} title={guest?.guestName || "Guest"} messages={messages.filter(item => item.guestId === selectedGuestId)} staff />}
+      {selectedGuestId && <LiveConversation key={selectedGuestId} guestId={selectedGuestId} title={guest?.guestName || "Guest"} messages={messages.filter(item => item.guestId === selectedGuestId)} staff selected={selected} />}
     </div> : <EmptyExperience title="No conversations yet" description="New guest messages will appear in this inbox." />}
     {id && role === "staff" && <button className="button button-soft" type="button" disabled={loading} onClick={() => void refreshLiveConcierge({ id, role }, selected, true)}>Refresh inbox</button>}
   </section>;
