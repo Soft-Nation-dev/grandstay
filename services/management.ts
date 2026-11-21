@@ -1,4 +1,6 @@
 import { getSession } from "@/services/auth";
+import { apiConfigured } from "@/services/api-client";
+import { saveBackendRoom } from "@/services/backend-rooms";
 import { readBookingStore } from "@/services/booking-store";
 import { readManagementStore, writeManagementStore } from "@/services/management-store";
 import { reservations, roomImages } from "@/data/mock";
@@ -9,8 +11,9 @@ function requireManager() {
   if (getSession()?.role !== "manager") throw new Error("Only managers can change hotel settings.");
 }
 
-export function saveRoom(input: Omit<Room, "id">, id?: string) {
+export async function saveRoom(input: Omit<Room, "id">, id?: string) {
   requireManager();
+  if (apiConfigured()) return saveBackendRoom(input, id);
   const store = readManagementStore();
   const name = input.name.trim();
   if (!name || name.length > 80 || !input.description.trim() || !input.bed.trim() || !input.view.trim()) throw new Error("Complete the room details.");

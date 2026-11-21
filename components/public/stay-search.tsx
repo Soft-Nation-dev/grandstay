@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/icon";
+import { apiConfigured } from "@/services/api-client";
 import { localDate, nextDate, stayNights } from "@/lib/format";
 import type { StaySearch as Search } from "@/types/hotel";
 
@@ -20,7 +21,7 @@ export function StaySearch({ initial, roomId }: { initial?: Search; roomId?: str
     setError("");
     const query = new URLSearchParams({ checkIn, checkOut, guests: String(guests) });
     if (roomId) query.set("room", roomId);
-    if (roomId) {
+    if (roomId && !apiConfigured()) {
       const url = new URL(window.location.href);
       url.search = query.toString();
       window.history.pushState(null, "", url);

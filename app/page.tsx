@@ -4,20 +4,13 @@ import { SiteShell } from "@/components/layout/site-shell";
 import { FeaturedRooms } from "@/components/public/featured-rooms";
 import { StaySearch } from "@/components/public/stay-search";
 import { Icon } from "@/components/ui/icon";
+import { HotelHero } from "@/components/public/hotel-hero";
 import { hotel } from "@/data/mock";
 
 export default function Home() {
   return <SiteShell>
     <div className="shell home-content">
-      <section className="hero">
-        <div className="hero-copy">
-          <span className="hero-label"><Icon name="hotel" /> Welcome to Guestly</span>
-          <h1>{hotel.tagline}</h1>
-          <p>{hotel.description} Discover thoughtfully designed rooms, easier check-in and a concierge ready to assist.</p>
-          <span className="hero-location"><Icon name="location" /> {hotel.location}</span>
-        </div>
-        <div className="hero-image"><Image src={hotel.heroImage} alt="Warmly furnished Guestly executive suite" fill sizes="(max-width: 760px) 100vw, 55vw" priority /></div>
-      </section>
+      <HotelHero />
       <section className="panel reserve-panel" id="reserve" aria-labelledby="reserve-title">
         <div className="section-heading"><div><span className="eyebrow">Make yourself at home</span><h2 id="reserve-title">Reserve your stay</h2><p>Choose your dates and find a room that suits you.</p></div></div>
         <StaySearch />
