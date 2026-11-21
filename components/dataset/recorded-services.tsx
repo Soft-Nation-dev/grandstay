@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { apiConfigured } from "@/services/api-client";
+import { LiveHistoricalRecords } from "@/components/dataset/live-historical";
 import { recordedServices } from "@/services/hotel-dataset";
 import { Icon } from "@/components/ui/icon";
 
 const pageSize = 10;
 
-export function RecordedServices({ guestId }: { guestId?: string }) {
+function DemoRecordedServices({ guestId }: { guestId?: string }) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [page, setPage] = useState(0);
@@ -20,4 +22,9 @@ export function RecordedServices({ guestId }: { guestId?: string }) {
     {!rows.length && <p className="muted">No matching records.</p>}
     {pages > 1 && <div className="dataset-pagination"><button type="button" className="button button-soft" disabled={page === 0} onClick={() => setPage(value => value - 1)}><Icon name="back" /> Previous</button><span role="status">Page {page + 1} of {pages}</span><button type="button" className="button button-soft" disabled={page + 1 >= pages} onClick={() => setPage(value => value + 1)}>Next <Icon name="arrow" /></button></div>}
   </section>;
+}
+
+
+export function RecordedServices({ guestId }: { guestId?: string }) {
+  return apiConfigured() ? <LiveHistoricalRecords source="service-requests" /> : <DemoRecordedServices guestId={guestId} />;
 }

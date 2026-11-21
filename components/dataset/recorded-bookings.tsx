@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { apiConfigured } from "@/services/api-client";
+import { LiveHistoricalRecords } from "@/components/dataset/live-historical";
 import { recordedBookings, recordedPayment } from "@/services/hotel-dataset";
 import { formatMoney } from "@/lib/format";
 import { Icon } from "@/components/ui/icon";
 
 const pageSize = 10;
 
-export function RecordedBookings({ guestId, manager = false }: { guestId?: string; manager?: boolean }) {
+function DemoRecordedBookings({ guestId, manager = false }: { guestId?: string; manager?: boolean }) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [page, setPage] = useState(0);
@@ -23,4 +25,9 @@ export function RecordedBookings({ guestId, manager = false }: { guestId?: strin
     {!rows.length && <p className="muted">No matching records.</p>}
     {pages > 1 && <div className="dataset-pagination"><button type="button" className="button button-soft" disabled={page === 0} onClick={() => setPage(value => value - 1)}><Icon name="back" /> Previous</button><span role="status">Page {page + 1} of {pages}</span><button type="button" className="button button-soft" disabled={page + 1 >= pages} onClick={() => setPage(value => value + 1)}>Next <Icon name="arrow" /></button></div>}
   </section>;
+}
+
+
+export function RecordedBookings({ guestId, manager = false }: { guestId?: string; manager?: boolean }) {
+  return apiConfigured() ? manager ? <LiveHistoricalRecords source="bookings" /> : null : <DemoRecordedBookings guestId={guestId} manager={manager} />;
 }
