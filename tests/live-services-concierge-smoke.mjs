@@ -90,7 +90,7 @@ try {
   assert.equal(own.data.items[0].history.length, 1);
 
   await visit('/guest/concierge');
-  await page.getByRole('heading', { name: 'Concierge' }).waitFor();
+  await page.getByRole('heading', { name: 'Concierge', exact: true }).waitFor();
   await page.getByRole('textbox', { name: 'Message' }).fill('Hello, is housekeeping available today?');
   await page.getByRole('button', { name: 'Send message' }).click();
   await page.getByText('Hello, is housekeeping available today?').waitFor();
