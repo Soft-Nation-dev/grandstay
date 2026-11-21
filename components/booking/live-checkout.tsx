@@ -24,14 +24,6 @@ export function LiveCheckout() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const locked = useRef(false);
-  const [now, setNow] = useState(0);
-  const accountId = account?.id;
-  const accountRole = account?.role;
-  useEffect(() => {
-    const timeout = window.setTimeout(() => setNow(Date.now()), 0);
-    const interval = window.setInterval(() => setNow(Date.now()), 30000);
-    return () => { window.clearTimeout(timeout); window.clearInterval(interval); };
-  }, []);
   const requestId = useRef<string | null>(null);
   const requestedBookingId = params.get("bookingId") || "";
   const stay = readStay(params);
@@ -42,12 +34,12 @@ export function LiveCheckout() {
   const amount = hold ? hold.amount : room ? room.nightlyRate * nights : 0;
   const validInput = Boolean(input && input.checkIn >= localDate() && nights >= 1 && nights <= 365 &&
     room && room.inventory > 0 && input.guests <= room.capacity);
-  const activeHold = hold?.status === "pending" && Boolean(hold.expiresAt) && Date.parse(hold.expiresAt || "") > now;
+  const activeHold = hold?.status === "pending" && Boolean(hold.expiresAt) && Date.parse(hold.expiresAt || "") > Date.now();
   const returnPath = input ? "/checkout?" + bookingQuery(input) : requestedBookingId ? "/checkout?bookingId=" + encodeURIComponent(requestedBookingId) : "/rooms";
   const nextQuery = new URLSearchParams({ next: returnPath });
 
   useEffect(() => {
-    if (!requestedBookingId || !accountId || accountRole !== "guest") return;
+    if (!requestedBookingId || !account || account.role !== "guest") return;
     let current = true;
     void getBackendBooking(requestedBookingId).then(value => {
       if (current) setHold(value);
@@ -55,9 +47,9 @@ export function LiveCheckout() {
       if (current) setHoldError(cause instanceof Error ? cause.message : "Unable to retrieve this reservation.");
     });
     return () => { current = false; };
-  }, [requestedBookingId, accountId, accountRole]);
+  }, [requestedBookingId, account?.id, account?.role]);
 
-  async function start(at: number) {
+  async function start() {
     if (locked.current || account?.role !== "guest") return;
     locked.current = true;
     setBusy(true);
@@ -70,7 +62,7 @@ export function LiveCheckout() {
         current = await createBackendHold(input, requestId.current);
         setHold(current);
       }
-      if (!current || current.status !== "pending" || !current.expiresAt || Date.parse(current.expiresAt) <= at) {
+      if (!current || current.status !== "pending" || !current.expiresAt || Date.parse(current.expiresAt) <= Date.now()) {
         throw new Error("Your reservation hold has expired. Please choose your dates again.");
       }
       const payment = await initializeBackendPayment(current.id);
@@ -133,7 +125,7 @@ export function LiveCheckout() {
 
   return <div className="detail-page">
     <Link className="text-link" href={input ? "/rooms?" + bookingQuery(input) : "/guest/bookings"}><Icon name="back" /> Back to rooms</Link>
-    <div className="page-heading"><span className="eyebrow">Secure reservation</span><h1>Complete your booking</h1><p>We&apos;ll reserve your room for 15 minutes, then send you to Paystack for payment.</p></div>
+    <div className="page-heading"><span className="eyebrow">Secure reservation</span><h1>Complete your booking</h1><p>We'll reserve your room for 15 minutes, then send you to Paystack for payment.</p></div>
     <div className="checkout-grid">
       <section className="panel checkout-panel">
         <h2>Guest details</h2>
@@ -142,7 +134,7 @@ export function LiveCheckout() {
         <div className="payment-provider"><span className="paystack-mark" aria-hidden="true"><i/><i/><i/></span><div><strong>Paystack</strong><p className="muted">Secure online checkout · NGN</p></div><Icon name="shield" /></div>
         {hold && <p className="auth-notice" role="status">Reservation held until {new Date(hold.expiresAt || "").toLocaleString("en-NG", { timeZone: "Africa/Lagos", dateStyle: "medium", timeStyle: "short" })} WAT.</p>}
         {error && <p className="auth-error" role="alert">{error}</p>}
-        <button type="button" className="button button-primary" disabled={busy} onClick={() => void start(Date.now())}>
+        <button type="button" className="button button-primary" disabled={busy} onClick={() => void start()}>
           {busy ? "Preparing payment…" : hold ? "Continue to Paystack" : "Reserve and continue to Paystack"} <Icon name="arrow" />
         </button>
         {hold && <button type="button" className="button button-soft" disabled={busy} onClick={() => void cancel()}>Cancel reservation hold</button>}

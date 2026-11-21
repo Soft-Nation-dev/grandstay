@@ -16,16 +16,14 @@ const demoServerSnapshot = () => JSON.stringify(initialBookingStore);
 
 export function useBookingStore(): BookingStore {
   const account = useAuth();
-  const accountId = account?.id;
-  const accountRole = account?.role;
   useEffect(() => {
     if (!apiConfigured()) return;
-    if (accountId && accountRole && ["guest", "staff", "manager"].includes(accountRole)) {
-      void refreshBackendBookings({ id: accountId, role: accountRole }).catch(() => {});
-    } else if (accountRole === undefined && account === null) {
+    if (account && ["guest", "staff", "manager"].includes(account.role)) {
+      void refreshBackendBookings(account).catch(() => {});
+    } else if (account === null) {
       resetBackendBookings();
     }
-  }, [accountId, accountRole, account === null]);
+  }, [account?.id, account?.role]);
 
   const snapshot = useSyncExternalStore(
     apiConfigured() ? subscribeBackendBookings : subscribeBookings,
