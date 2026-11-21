@@ -8,6 +8,17 @@ const sharedPassword = 'TestPassword123';
 const bookings = [];
 const payments = [];
 const audit = [];
+const serviceRequests = [];
+const conciergeMessages = [];
+const serviceCatalogue = [
+  ['Housekeeping','Request room cleaning and housekeeping.'],
+  ['Airport Transfer','Airport pickup assistance.'],
+  ['Maintenance','Help with room equipment.'],
+  ['Room Service','Food and refreshments in your room.'],
+  ['Extra Towels','Fresh towels for your room.'],
+  ['Laundry','Laundry assistance.'],
+  ['Restaurant','Hotel dining requests.'],
+].map(([name,description],index) => ({ id: '507f1f77bcf86cd7994390' + String(index + 10), name, description, active: true }));
 const checkins = [];
 let simulatedNow = null;
 
@@ -28,6 +39,30 @@ function publicCheckin(item) {
   const data = { ...item };
   delete data.nonce;
   return data;
+}
+
+function hotelToday() {
+  const pieces = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Lagos', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const value = name => pieces.find(part => part.type === name).value;
+  return value('year') + '-' + value('month') + '-' + value('day');
+}
+
+function publicMessage(item) {
+  const { guestName, ...data } = item;
+  return data;
+}
+
+function humanConversations() {
+  const grouped = new Map();
+  for (const message of conciergeMessages) {
+    if (!grouped.has(message.guestId)) grouped.set(message.guestId, {
+      guestId: message.guestId, guestName: message.guestName, sender: message.sender,
+      lastText: message.text, updatedAt: message.createdAt, waiting: message.sender === 'guest',
+    });
+  }
+  return [...grouped.values()];
 }
 
 function bookingForPayment(reference) {
@@ -157,6 +192,9 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === '/api/v1/hotels/current' && req.method === 'GET') {
       return json(res, 200, true, 'Hotel retrieved', hotel);
+    }
+    if (url.pathname === '/api/v1/servicerequests/catalogue' && req.method === 'GET') {
+      return json(res, 200, true, 'Service catalogue retrieved', serviceCatalogue.filter(item => item.active));
     }
     if (url.pathname === '/api/v1/rooms' && req.method === 'GET') {
       return json(res, 200, true, 'Rooms retrieved', rooms);
@@ -411,6 +449,112 @@ const server = http.createServer(async (req, res) => {
         bookingId: booking.id, status, simulated: true, validFrom: from, expiresAt: until,
         code: status === 'active' ? 'SIM-' + item.nonce.replaceAll('-', '').slice(0, 8).toUpperCase() : null,
       });
+    }
+    if (url.pathname === '/api/v1/servicerequests/catalogue/manage' && req.method === 'GET') {
+      if (active.user.role !== 'manager') return json(res, 403, false, 'Access denied');
+      return json(res, 200, true, 'Service catalogue retrieved', serviceCatalogue);
+    }
+    if (url.pathname === '/api/v1/servicerequests/catalogue' && req.method === 'POST') {
+      if (active.user.role !== 'manager') return json(res, 403, false, 'Access denied');
+      const fields = await requestBody(req);
+      if (!fields.name?.trim() || !fields.description?.trim() || typeof fields.active !== 'boolean') return json(res, 400, false, 'Invalid service');
+      if (serviceCatalogue.some(item => item.name.toLowerCase() === fields.name.trim().toLowerCase())) return json(res, 409, false, 'Duplicate service');
+      const category = { id: randomUUID().replaceAll('-', '').slice(0, 24), name: fields.name.trim(), description: fields.description.trim(), active: fields.active };
+      serviceCatalogue.push(category);
+      return json(res, 201, true, 'Service saved', category);
+    }
+    const catalogueEdit = url.pathname.match(/^\/api\/v1\/servicerequests\/catalogue\/([a-f0-9]{24})$/);
+    if (catalogueEdit && req.method === 'PATCH') {
+      if (active.user.role !== 'manager') return json(res, 403, false, 'Access denied');
+      const category = serviceCatalogue.find(item => item.id === catalogueEdit[1]);
+      if (!category) return json(res, 404, false, 'Service not found');
+      Object.assign(category, await requestBody(req));
+      return json(res, 200, true, 'Service updated', category);
+    }
+    if (url.pathname === '/api/v1/servicerequests' && req.method === 'POST') {
+      if (active.user.role !== 'guest') return json(res, 403, false, 'Access denied');
+      const fields = await requestBody(req);
+      if (fields.status || !fields.bookingId || !fields.categoryId) return json(res, 400, false, 'Invalid request');
+      const booking = bookings.find(item => item.id === fields.bookingId && item.guestId === active.user.id);
+      if (!booking) return json(res, 404, false, 'Reservation not found');
+      const today = hotelToday();
+      if (booking.status !== 'confirmed' || !(booking.checkIn <= today && today < booking.checkOut)) return json(res, 409, false, 'Active confirmed stay required');
+      const category = serviceCatalogue.find(item => item.id === fields.categoryId && item.active);
+      if (!category) return json(res, 409, false, 'Category unavailable');
+      const now = new Date().toISOString();
+      const entry = {
+        id: randomUUID().replaceAll('-', '').slice(0, 24),
+        bookingId: booking.id, guestId: active.user.id, guestName: active.user.firstName + ' ' + active.user.lastName,
+        roomName: booking.roomName, categoryId: category.id, category: category.name,
+        details: String(fields.details || '').trim(), status: 'received', createdAt: now,
+        history: [{ status: 'received', at: now }],
+      };
+      serviceRequests.unshift(entry);
+      return json(res, 201, true, 'Service request received', entry);
+    }
+    if (url.pathname === '/api/v1/servicerequests/me' && req.method === 'GET') {
+      if (active.user.role !== 'guest') return json(res, 403, false, 'Access denied');
+      return json(res, 200, true, 'My service requests', pageItems(serviceRequests.filter(item => item.guestId === active.user.id), url));
+    }
+    if (url.pathname === '/api/v1/servicerequests' && req.method === 'GET') {
+      if (!['staff', 'manager'].includes(active.user.role)) return json(res, 403, false, 'Access denied');
+      return json(res, 200, true, 'Service requests', pageItems(serviceRequests, url));
+    }
+    const requestProgress = url.pathname.match(/^\/api\/v1\/servicerequests\/([a-f0-9]{24})\/status$/);
+    if (requestProgress && req.method === 'PATCH') {
+      if (active.user.role !== 'staff') return json(res, 403, false, 'Access denied');
+      const entry = serviceRequests.find(item => item.id === requestProgress[1]);
+      const data = await requestBody(req);
+      const next = entry?.status === 'received' ? 'in-progress' : entry?.status === 'in-progress' ? 'done' : null;
+      if (!entry || !next || data.status !== next) return json(res, 409, false, 'Invalid request transition');
+      entry.status = next;
+      entry.history.push({ status: next, at: new Date().toISOString() });
+      return json(res, 200, true, 'Service request updated', entry);
+    }
+    if (url.pathname === '/api/v1/concierge/me' && req.method === 'POST') {
+      if (active.user.role !== 'guest') return json(res, 403, false, 'Access denied');
+      const data = await requestBody(req);
+      if (!data.text?.trim() || data.text.trim().length > 1000) return json(res, 400, false, 'Invalid message');
+      const entry = {
+        id: randomUUID().replaceAll('-', '').slice(0, 24), guestId: active.user.id,
+        guestName: active.user.firstName + ' ' + active.user.lastName,
+        sender: 'guest', senderName: active.user.firstName + ' ' + active.user.lastName,
+        text: data.text.trim(), createdAt: new Date().toISOString(),
+      };
+      conciergeMessages.unshift(entry);
+      return json(res, 201, true, 'Message sent', publicMessage(entry));
+    }
+    if (url.pathname === '/api/v1/concierge/me' && req.method === 'GET') {
+      if (active.user.role !== 'guest') return json(res, 403, false, 'Access denied');
+      const page = pageItems(conciergeMessages.filter(item => item.guestId === active.user.id).map(publicMessage), url);
+      page.items.reverse();
+      return json(res, 200, true, 'Messages retrieved', page);
+    }
+    if (url.pathname === '/api/v1/concierge/conversations' && req.method === 'GET') {
+      if (active.user.role !== 'staff') return json(res, 403, false, 'Access denied');
+      return json(res, 200, true, 'Conversations retrieved', pageItems(humanConversations(), url));
+    }
+    const conciergeGuest = url.pathname.match(/^\/api\/v1\/concierge\/([a-f0-9]{24})$/);
+    if (conciergeGuest && req.method === 'GET') {
+      if (active.user.role !== 'staff') return json(res, 403, false, 'Access denied');
+      const page = pageItems(conciergeMessages.filter(item => item.guestId === conciergeGuest[1]).map(publicMessage), url);
+      page.items.reverse();
+      return json(res, 200, true, 'Messages retrieved', page);
+    }
+    if (conciergeGuest && req.method === 'POST') {
+      if (active.user.role !== 'staff') return json(res, 403, false, 'Access denied');
+      const guest = [...users.values()].find(item => item.id === conciergeGuest[1] && item.role === 'guest' && item.isActive);
+      if (!guest || !conciergeMessages.some(item => item.guestId === guest.id)) return json(res, 404, false, 'Conversation not found');
+      const data = await requestBody(req);
+      if (!data.text?.trim() || data.text.trim().length > 1000) return json(res, 400, false, 'Invalid message');
+      const entry = {
+        id: randomUUID().replaceAll('-', '').slice(0, 24), guestId: guest.id,
+        guestName: guest.firstName + ' ' + guest.lastName,
+        sender: 'staff', senderName: active.user.firstName + ' ' + active.user.lastName,
+        text: data.text.trim(), createdAt: new Date().toISOString(),
+      };
+      conciergeMessages.unshift(entry);
+      return json(res, 201, true, 'Reply sent', publicMessage(entry));
     }
     if (active.user.role !== 'admin') return json(res, 403, false, 'Access denied');
     if (url.pathname === '/api/v1/users/team' && req.method === 'GET') {
