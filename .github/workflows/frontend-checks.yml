@@ -46,3 +46,11 @@ jobs:
           node tests/live-checkins-smoke.mjs
           node tests/live-services-concierge-smoke.mjs
           node tests/live-reporting-loyalty-smoke.mjs
+      - name: Check Cloudflare Pages export
+        env:
+          CLOUDFLARE_PAGES: "true"
+        run: |
+          npm run build
+          test -f out/index.html
+          test -f out/login/index.html
+          test -f out/rooms/index.html
