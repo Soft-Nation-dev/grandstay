@@ -33,6 +33,7 @@ export type ServiceRequest = {
 export type ConciergeMessage = {
   id: string;
   guestId: string;
+  guestName?: string;
   sender: "guest" | "staff" | "assistant";
   senderName: string;
   text: string;
