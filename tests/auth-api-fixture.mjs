@@ -8,6 +8,8 @@ const sharedPassword = 'TestPassword123';
 const bookings = [];
 const payments = [];
 const audit = [];
+const checkins = [];
+let simulatedNow = null;
 
 function pageItems(items, url) {
   const page = Number(url.searchParams.get('page') || 1);
@@ -20,6 +22,11 @@ function record(action, bookingId, paymentId) {
     id: randomUUID().slice(0, 24), action, bookingId: bookingId || null,
     paymentId: paymentId || null, createdAt: new Date().toISOString(),
   });
+}
+
+function publicCheckin(item) {
+  const { nonce, ...data } = item;
+  return data;
 }
 
 function bookingForPayment(reference) {
@@ -79,6 +86,33 @@ function session(req) {
   return user?.isActive ? { token, user } : null;
 }
 
+async function requestMultipart(req) {
+  const contentType = req.headers['content-type'] || '';
+  const match = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/);
+  if (!match) throw new Error('Expected multipart body');
+  const boundary = '--' + (match[1] || match[2]);
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of req) {
+    size += chunk.length;
+    if (size > 3 * 1024 * 1024) throw new Error('Body too large');
+    chunks.push(chunk);
+  }
+  const sections = Buffer.concat(chunks).toString('latin1').split(boundary);
+  const fields = {};
+  let validDocument = false;
+  for (const section of sections) {
+    const start = section.indexOf('\r\n\r\n');
+    if (start < 0) continue;
+    const header = section.slice(0, start);
+    const name = header.match(/name="([^"]+)"/)?.[1];
+    const value = section.slice(start + 4).replace(/\r\n$/, '');
+    if (name === 'document') validDocument = header.includes('image/png') && value.startsWith('\x89PNG');
+    else if (name) fields[name] = value;
+  }
+  return { fields, validDocument };
+}
+
 function requestBody(req) {
   return new Promise((resolve, reject) => {
     let value = '';
@@ -136,6 +170,11 @@ const server = http.createServer(async (req, res) => {
         })
         .filter(room => room.availableInventory > 0);
       return json(res, 200, true, 'Availability retrieved', available);
+    }
+    if (url.pathname === '/__test/checkin-clock' && req.method === 'POST') {
+      const data = await requestBody(req);
+      simulatedNow = data.at ? new Date(data.at) : null;
+      return json(res, 200, true, 'Clock updated');
     }
     if (url.pathname === '/__test/pay' && req.method === 'POST') {
       const data = await requestBody(req);
@@ -290,6 +329,87 @@ const server = http.createServer(async (req, res) => {
       payment.refundStatus = 'pending';
       record('refund.requested', payment.bookingId, payment.id);
       return json(res, 200, true, 'Refund submitted', { reference: payment.reference, refundStatus: 'pending' });
+    }
+    if (url.pathname === '/api/v1/checkins' && req.method === 'POST') {
+      if (active.user.role !== 'guest') return json(res, 403, false, 'Access denied');
+      const { fields, validDocument } = await requestMultipart(req);
+      if (!validDocument) return json(res, 400, false, 'Invalid ID image');
+      const booking = bookings.find(item => item.id === fields.bookingId && item.guestId === active.user.id);
+      if (!booking || booking.status !== 'confirmed') return json(res, 409, false, 'Confirmed booking required');
+      let item = checkins.find(record => record.bookingId === booking.id);
+      if (item && item.status !== 'rejected') return json(res, 409, false, 'Check-in already submitted');
+      const now = new Date().toISOString();
+      if (!item) {
+        item = {
+          id: randomUUID().replaceAll('-', '').slice(0, 24),
+          bookingId: booking.id, guestId: booking.guestId, guestName: booking.guestName,
+          roomName: booking.roomName, checkIn: booking.checkIn, checkOut: booking.checkOut,
+          history: [],
+        };
+        checkins.unshift(item);
+      }
+      Object.assign(item, {
+        arrivalTime: fields.arrivalTime, documentKind: fields.documentKind,
+        status: 'pending', submittedAt: now, reviewedAt: null, reviewNote: '',
+        documentAvailable: true, nonce: null,
+      });
+      item.history.push({ status: 'pending', at: now });
+      return json(res, 201, true, 'Check-in submitted', publicCheckin(item));
+    }
+    if (url.pathname === '/api/v1/checkins/me' && req.method === 'GET') {
+      if (active.user.role !== 'guest') return json(res, 403, false, 'Access denied');
+      return json(res, 200, true, 'My check-ins', pageItems(checkins.filter(item => item.guestId === active.user.id).map(publicCheckin), url));
+    }
+    if (url.pathname === '/api/v1/checkins' && req.method === 'GET') {
+      if (active.user.role !== 'staff') return json(res, 403, false, 'Access denied');
+      return json(res, 200, true, 'Check-in queue', pageItems(checkins.map(publicCheckin), url));
+    }
+    const documentMatch = url.pathname.match(/^\/api\/v1\/checkins\/([a-f0-9]{24})\/document$/);
+    if (documentMatch && req.method === 'GET') {
+      if (active.user.role !== 'staff') return json(res, 403, false, 'Access denied');
+      const item = checkins.find(value => value.bookingId === documentMatch[1]);
+      if (!item?.documentAvailable) return json(res, 404, false, 'Document unavailable');
+      const bytes = Buffer.from('89504e470d0a1a0a123456789abcdef0', 'hex');
+      res.writeHead(200, {
+        'Content-Type': 'image/png', 'Cache-Control': 'private, no-store',
+        'Content-Disposition': 'attachment; filename="identity-document.png"',
+        'X-Content-Type-Options': 'nosniff',
+      });
+      res.end(bytes);
+      return;
+    }
+    const reviewMatch = url.pathname.match(/^\/api\/v1\/checkins\/([a-f0-9]{24})\/review$/);
+    if (reviewMatch && req.method === 'PATCH') {
+      if (active.user.role !== 'staff') return json(res, 403, false, 'Access denied');
+      const item = checkins.find(value => value.bookingId === reviewMatch[1]);
+      if (!item || item.status !== 'pending') return json(res, 409, false, 'Not pending');
+      const data = await requestBody(req);
+      if (typeof data.approved !== 'boolean' || (!data.approved && !String(data.note || '').trim())) {
+        return json(res, 400, false, 'A rejection reason is required');
+      }
+      item.status = data.approved ? 'approved' : 'rejected';
+      item.reviewNote = String(data.note || '');
+      item.reviewedAt = new Date().toISOString();
+      item.history.push({ status: item.status, at: item.reviewedAt });
+      item.nonce = data.approved ? randomUUID() : null;
+      return json(res, 200, true, 'Check-in reviewed', publicCheckin(item));
+    }
+    const keyMatch = url.pathname.match(/^\/api\/v1\/roomkeys\/([a-f0-9]{24})$/);
+    if (keyMatch && req.method === 'GET') {
+      if (active.user.role !== 'guest') return json(res, 403, false, 'Access denied');
+      const booking = bookings.find(value => value.id === keyMatch[1] && value.guestId === active.user.id);
+      if (!booking) return json(res, 404, false, 'Booking not found');
+      const item = checkins.find(value => value.bookingId === booking.id);
+      const empty = { bookingId: booking.id, status: 'unavailable', code: null, simulated: true, validFrom: null, expiresAt: null };
+      if (booking.status !== 'confirmed' || item?.status !== 'approved') return json(res, 200, true, 'Access unavailable', empty);
+      const from = new Date(Math.max(Date.parse(booking.checkIn + 'T14:00:00+01:00'), Date.parse(item.reviewedAt))).toISOString();
+      const until = new Date(booking.checkOut + 'T12:00:00+01:00').toISOString();
+      const current = simulatedNow || new Date();
+      const status = current >= new Date(until) ? 'expired' : current < new Date(from) ? 'scheduled' : 'active';
+      return json(res, 200, true, 'Access retrieved', {
+        bookingId: booking.id, status, simulated: true, validFrom: from, expiresAt: until,
+        code: status === 'active' ? 'SIM-' + item.nonce.replaceAll('-', '').slice(0, 8).toUpperCase() : null,
+      });
     }
     if (active.user.role !== 'admin') return json(res, 403, false, 'Access denied');
     if (url.pathname === '/api/v1/users/team' && req.method === 'GET') {
