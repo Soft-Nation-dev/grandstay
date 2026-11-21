@@ -17,6 +17,7 @@ jobs:
     env:
       GITHUB_PAGES: "true"
       NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+      NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,6 +30,7 @@ jobs:
       - run: npm install --no-save --package-lock=false playwright
       - run: npx playwright install --with-deps chromium
       - name: Test the static site
+        if: env.NEXT_PUBLIC_API_URL == ''
         env:
           SMOKE_BASE_URL: http://127.0.0.1:3000/${{ github.event.repository.name }}
         run: |
@@ -40,6 +42,12 @@ jobs:
             sleep 1
           done
           node tests/frontend-smoke.mjs
+      - name: Check connected static pages
+        if: env.NEXT_PUBLIC_API_URL != ''
+        run: |
+          test -f out/index.html
+          test -f out/login/index.html
+          test -f out/rooms/index.html
       - uses: actions/upload-pages-artifact@v3
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
