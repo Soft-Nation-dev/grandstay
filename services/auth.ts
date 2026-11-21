@@ -1,4 +1,9 @@
 import { demoAccounts, demoPassword, initialAccountPolicies } from "@/data/mock";
+import { apiConfigured } from "@/services/api-client";
+import {
+  backendAccounts, backendSession, backendProvisionTeam, backendRegisterGuest, backendSignIn,
+  backendSignOut, backendUpdateTeamAccess, subscribeBackendAuth,
+} from "@/services/backend-auth";
 import type { Account, AccountPolicy, Credentials, Registration, Role, TeamAccess, TeamRegistration } from "@/types/auth";
 
 type StoredAccount = Account & { salt: string; digest: string };
@@ -48,11 +53,13 @@ function storedSession(): Session | null {
 }
 
 export function getAccounts(): Account[] {
+  if (apiConfigured()) return backendAccounts();
   const access = policies();
   return [...demoAccounts, ...storedAccounts()].map(account => publicAccount(account, access[account.id]));
 }
 
 export function getSession(): Account | null {
+  if (apiConfigured()) return backendSession();
   const session = storedSession();
   if (!session || session.revision !== revision(session.id)) return null;
   return getAccounts().find(account => account.id === session.id && account.active) ?? null;
@@ -63,6 +70,7 @@ function announce() {
 }
 
 export function subscribeAuth(listener: () => void) {
+  if (apiConfigured()) return subscribeBackendAuth(listener);
   window.addEventListener(changeEvent, listener);
   window.addEventListener("storage", listener);
   return () => {
@@ -80,6 +88,7 @@ function startSession(id: string) {
 }
 
 export function signOut() {
+  if (apiConfigured()) return backendSignOut();
   sessionStorage.removeItem(sessionKey);
   announce();
 }
@@ -96,6 +105,7 @@ function requireAdmin() {
 }
 
 export async function signIn({ email, password }: Credentials) {
+  if (apiConfigured()) return backendSignIn({ email, password });
   const normalized = normalizeEmail(email);
   const demo = demoAccounts.find(account => account.email === normalized || account.email.replace("@guestly.example", "@grandstay.example") === normalized);
   if (demo && (password === demoPassword || password === "GrandStay123!")) return startSession(demo.id);
@@ -122,16 +132,19 @@ async function createAccount({ name, email, password }: Registration, role: Role
 }
 
 export async function registerGuest(input: Registration) {
+  if (apiConfigured()) return backendRegisterGuest(input);
   return startSession((await createAccount(input, "guest")).id);
 }
 
 export async function provisionTeamAccount(input: TeamRegistration) {
+  if (apiConfigured()) return backendProvisionTeam(input);
   requireAdmin();
   if (input.role !== "staff" && input.role !== "manager") throw new Error("Choose a staff or manager role.");
   return createAccount(input, input.role);
 }
 
 export function updateTeamAccess(id: string, access: TeamAccess) {
+  if (apiConfigured()) return backendUpdateTeamAccess(id, access);
   requireAdmin();
   const account = getAccounts().find(item => item.id === id);
   if (!account || (account.role !== "staff" && account.role !== "manager")) throw new Error("Only staff and manager accounts can be modified here.");

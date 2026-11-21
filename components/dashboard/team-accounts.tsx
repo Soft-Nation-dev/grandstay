@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { useAccounts } from "@/hooks/use-auth";
+import { useEffect, useState, type FormEvent } from "react";
+import { useAccounts, useAuth } from "@/hooks/use-auth";
+import { apiConfigured } from "@/services/api-client";
+import { refreshBackendTeam } from "@/services/backend-auth";
 import { provisionTeamAccount, updateTeamAccess } from "@/services/auth";
 import { roleLabels, type Account, type TeamRole } from "@/types/auth";
 import { PasswordField } from "@/components/auth/password-field";
@@ -35,7 +37,7 @@ function ProvisionForm() {
     <div><span className="eyebrow">Account provisioning</span><h2>Create team account</h2><p className="muted">Create access for a staff member or manager.</p></div>
     <form className="auth-form-stack" onSubmit={submit} aria-busy={busy}>
       <label className="auth-field"><span>Full name</span><input name="name" minLength={2} maxLength={100} required /></label>
-      <label className="auth-field"><span>Sample email address</span><input name="email" type="email" maxLength={254} required /></label>
+      <label className="auth-field"><span>{apiConfigured() ? "Email address" : "Sample email address"}</span><input name="email" type="email" maxLength={254} required /></label>
       <label className="auth-field"><span>Role</span><select name="role"><option value="staff">Staff</option><option value="manager">Manager</option></select></label>
       <PasswordField label="Password" autoComplete="new-password" minLength={8} />
       {error && <p className="auth-error" role="alert">{error}</p>}
@@ -49,16 +51,20 @@ function AccessEditor({ account, close, saved }: { account: Account; close: () =
   const [role, setRole] = useState<TeamRole>(account.role === "manager" ? "manager" : "staff");
   const [active, setActive] = useState(account.active);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const changed = role !== account.role || active !== account.active;
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setBusy(true);
     try {
-      updateTeamAccess(account.id, { role, active });
+      await updateTeamAccess(account.id, { role, active });
       saved();
     } catch (error) {
       setError(error instanceof Error ? error.message : "Unable to update account.");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -69,7 +75,7 @@ function AccessEditor({ account, close, saved }: { account: Account; close: () =
     </div>
     <p className="muted">Saving a change ends existing sessions for this account. Inactive accounts cannot sign in.</p>
     {error && <p className="auth-error" role="alert">{error}</p>}
-    <div className="experience-actions"><button className="button button-primary" type="submit" disabled={!changed}>Save changes</button><button className="button button-soft" type="button" onClick={close}>Cancel</button></div>
+    <div className="experience-actions"><button className="button button-primary" type="submit" disabled={!changed || busy}>{busy ? "Saving…" : "Save changes"}</button><button className="button button-soft" type="button" onClick={close}>Cancel</button></div>
   </form>;
 }
 
@@ -102,10 +108,25 @@ function TeamDirectory({ accounts }: { accounts: Account[] }) {
 }
 
 export function TeamAccounts() {
+  const session = useAuth();
   const accounts = useAccounts().filter(account => account.role === "staff" || account.role === "manager");
+  const [loading, setLoading] = useState(apiConfigured());
+  const [loadError, setLoadError] = useState("");
+  useEffect(() => {
+    if (!apiConfigured() || session?.role !== "admin") return;
+    let current = true;
+    void refreshBackendTeam().catch(error => {
+      if (current) setLoadError(error instanceof Error ? error.message : "Unable to load team accounts.");
+    }).finally(() => {
+      if (current) setLoading(false);
+    });
+    return () => { current = false; };
+  }, [session?.id, session?.role]);
   const metrics = [{ label: "Team accounts", value: accounts.length, icon: "people" }, { label: "Active staff", value: accounts.filter(item => item.active && item.role === "staff").length, icon: "user" }, { label: "Active managers", value: accounts.filter(item => item.active && item.role === "manager").length, icon: "chart" }, { label: "Inactive accounts", value: accounts.filter(item => !item.active).length, icon: "shield" }] as const;
   return <section className="workspace-section">
     <div><span className="eyebrow">Administration</span><h2>Team access management</h2><p className="muted">Provision staff and managers and control their access to Guestly.</p></div>
+    {loading && <p role="status">Loading team accounts…</p>}
+    {loadError && <p className="auth-error" role="alert">{loadError}</p>}
     <div className="staff-metrics">{metrics.map(item => <div className="panel staff-metric" key={item.label}><div><span>{item.label}</span><Icon name={item.icon} /></div><strong>{item.value}</strong></div>)}</div>
     <div className="team-grid admin-team-grid"><ProvisionForm /><TeamDirectory accounts={accounts} /></div>
     <p className="auth-disclaimer"><Icon name="info" />Guest registration is independent of team access. The super-admin account is protected from changes in this workspace.</p>
