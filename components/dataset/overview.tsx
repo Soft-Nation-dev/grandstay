@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "@/components/navigation/app-link";
+import { apiConfigured } from "@/services/api-client";
+import { LiveDatasetOverview, LiveDatasetServiceStats } from "@/components/dataset/live-overview";
 import { datasetMetrics } from "@/services/hotel-dataset";
 import { formatMoney } from "@/lib/format";
 import { Icon } from "@/components/ui/icon";
@@ -6,7 +10,7 @@ import { Icon } from "@/components/ui/icon";
 const metrics = datasetMetrics();
 const percentage = (value: number, total: number) => total ? `${(value / total * 100).toFixed(1)}%` : "—";
 
-export function DatasetOverview() {
+function DemoDatasetOverview() {
   const maximum = Math.max(1, ...metrics.months.map(item => item.revenue));
   const cards = [
     { title: "Recorded bookings", value: metrics.total, hint: `${metrics.completed} completed · ${percentage(metrics.completed, metrics.total)}`, href: "/manager/bookings" },
@@ -25,10 +29,23 @@ export function DatasetOverview() {
   </section>;
 }
 
-export function DatasetServiceStats() {
+function DemoDatasetServiceStats() {
   return <section className="panel management-panel dataset-section"><div><span className="eyebrow">Hotel records</span><h2>Recorded service performance</h2><p className="muted">{metrics.requests} requests · {metrics.satisfaction.toFixed(1)}/5 average satisfaction</p></div>{metrics.services.map(item => <div className="management-stat" key={item.name}><div><strong>{item.name}</strong><p className="muted">Response: {item.response.toFixed(1)} min · Resolution: {item.resolution.toFixed(1)} min · {item.satisfaction.toFixed(1)}/5</p></div><strong>{item.count}</strong></div>)}</section>;
 }
 
-export function DatasetStaffSummary() {
+function DemoDatasetStaffSummary() {
   return <section className="panel management-panel"><div><span className="eyebrow">Hotel records</span><h2>Reservation and service history</h2></div><div className="management-stat"><div><strong>{metrics.total} booking records</strong><p className="muted">{metrics.completed} marked completed</p></div><Link className="text-link" href="/staff/bookings">Bookings <Icon name="arrow" /></Link></div><div className="management-stat"><div><strong>{metrics.requests} service records</strong><p className="muted">Average response: {metrics.response.toFixed(1)} min</p></div><Link className="text-link" href="/staff/services">Services <Icon name="arrow" /></Link></div></section>;
+}
+
+
+export function DatasetOverview() {
+  return apiConfigured() ? <LiveDatasetOverview /> : <DemoDatasetOverview />;
+}
+
+export function DatasetServiceStats() {
+  return apiConfigured() ? <LiveDatasetServiceStats /> : <DemoDatasetServiceStats />;
+}
+
+export function DatasetStaffSummary() {
+  return apiConfigured() ? null : <DemoDatasetStaffSummary />;
 }

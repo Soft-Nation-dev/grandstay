@@ -39,7 +39,7 @@ export function ServiceManagement() {
   const categories = [...new Set([...services.map(item => item.name), ...requests.map(item => item.category)])];
   return <section className="workspace-section">
     <div><span className="eyebrow">Hotel performance</span><h2>Services &amp; performance</h2><p className="muted">Monitor service delivery and manage the request catalogue.</p></div>
-    {!live && <DatasetServiceStats />}
+    <DatasetServiceStats />
     {live && catalogue.loading && <p role="status">Loading service catalogue…</p>}
     {live && catalogue.error && <p role="alert" className="auth-error">{catalogue.error}</p>}
     <div className="staff-metrics">{[{ title: "Total requests", value: metrics.total }, { title: "Completed", value: metrics.done }, { title: "Completion rate", value: metrics.completion === null ? "—" : `${metrics.completion}%` }, { title: "Avg. completion time", value: metrics.averageMinutes === null ? "—" : `${metrics.averageMinutes}m` }].map(item => <div className="panel staff-metric" key={item.title}><div>{item.title}</div><strong>{item.value}</strong></div>)}</div>
@@ -47,6 +47,6 @@ export function ServiceManagement() {
     <div className="staff-snapshot-heading"><h2>Service catalogue</h2><button className="button button-primary" onClick={() => setEditing("new")}>Add service <Icon name="arrow" /></button></div>
     {editing === "new" && <ServiceEditor key="new" close={() => setEditing(null)} />}
     <div className="workspace-grid">{services.map(item => <article className="panel management-panel" key={item.id}><div className="booking-card-heading"><h3>{item.name}</h3><span className={`experience-status ${item.active ? "status-approved" : "status-pending"}`}>{item.active ? "Available" : "Unavailable"}</span></div><p className="muted">{item.description}</p><button className="button button-soft" aria-expanded={editing === item.id} onClick={() => setEditing(editing === item.id ? null : item.id)}>Edit service</button>{editing === item.id && <div className="management-inline-editor"><ServiceEditor key={item.id} service={item} close={() => setEditing(null)} /></div>}</article>)}</div>
-    {!live && <RecordedServices />}
+    <RecordedServices />
   </section>;
 }
