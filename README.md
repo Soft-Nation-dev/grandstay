@@ -1,79 +1,72 @@
-# Guestly
+# Guestly Frontend
 
-Guestly is a hotel guest experience platform built as part of a team project. The idea is to make a hotel stay easier, from finding a room and making a reservation to checking in, requesting services and talking to the concierge.
+Guestly is a hotel website and guest dashboard. Guests can view rooms, book a stay, check in, request services and use the concierge. Hotel staff and managers also have their own pages for daily hotel work.
 
-The frontend also gives hotel staff, managers and super admins their own workspaces to handle the day-to-day operations behind the guest experience.
+## Open the website
 
-## Try it out
+[Guestly website](https://soft-nation-dev.github.io/guestly/)
 
-[Open Guestly](https://soft-nation-dev.github.io/guestly/)
+The website can still run as a demo when no backend address has been added. The demo uses sample data. Payments, check-in approvals and door access in demo mode are not real.
 
-You can browse rooms without an account. To explore the dashboards, head to the sign-in page and choose one of the four preview accounts.
+## Run the frontend on your computer
 
-## Running the project locally
+- Install Node.js 22.
+- Clone the repo and open the Guestly folder.
+- Run `npm ci`.
+- Run `npm run dev`.
+- Open `http://localhost:3000`.
 
-Make sure Node.js is installed, then clone the repository and run:
+To connect your local frontend to a running backend:
+
+- Copy `.env.example` to `.env.local`.
+- Set `NEXT_PUBLIC_API_URL=http://localhost:4000`, or use the backend's actual origin.
+- Restart the Next.js development server.
+- Check the login, rooms, checkout, check-in, services and manager pages.
+
+## Connect the published website
+
+The GitHub Pages workflow is ready to read the backend address from the repository's Actions variables.
+
+- Deploy the backend to an HTTPS address first.
+- Open this GitHub repository's **Settings > Secrets and variables > Actions > Variables**.
+- Add a repository variable named `NEXT_PUBLIC_API_URL`.
+- Set the value to the backend origin, for example `https://api.example.com`. Do not add `/api/v1` at the end.
+- Make sure the backend allows `https://soft-nation-dev.github.io` in its CORS settings.
+- Run the **GitHub Pages** workflow again from the Actions tab, or push a new commit to `main`.
+- Open the published website and confirm it now uses real accounts and backend records.
+
+Only the public backend URL should go into `NEXT_PUBLIC_API_URL`. Never put JWT secrets, database passwords, Paystack secret keys or other private values in a frontend variable.
+
+## Test the frontend
+
+Run these commands from the frontend folder:
 
 ```bash
-git clone https://github.com/Soft-Nation-dev/guestly.git
-cd guestly
 npm ci
-npm run dev
-```
-
-Open http://localhost:3000 in your browser.
-
-## How the project is organized
-
-- `app/` contains the pages and routes.
-- `components/` contains reusable interface elements and feature screens.
-- `data/mock.ts` holds the starting sample data.
-- `services/` and `hooks/` handle data access and updates.
-- `types/` and `lib/` hold shared data definitions and application logic.
-- `public/images/` contains the hotel photographs and design assets.
-- `tests/` contains the automated browser checks.
-
-## Where we are now
-
-The frontend is ready for the team to explore and integrate. For now, accounts, reservations and other records are kept in the browser. Payment, identity review and room access are simulated, so please use fictional details.
-
-When the backend is ready, we can connect it through the existing services and hooks instead of rebuilding the pages. Real authentication, permissions, room availability, payment verification, private document storage and shared records will need to be handled by the backend.
-
-## Backend connection
-
-The frontend now includes a typed API client in `services/api-client.ts`. Its request and error handling follow the backend's existing `{ success, message, data }` response format. The `hooks/use-api-request.ts` hook provides consistent loading, success and error states for future connected screens. For local integration, copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_API_URL` to the backend origin, normally `http://localhost:4000`. The deployed static site does not use a backend URL yet, so the existing demonstration continues to work until each live feature is connected and tested. No backend keys or secrets belong in the frontend.
-
-The backend API contract and CORS configuration are documented in the backend repository under `docs/api-contract.md`. Run `npm run test:api` to check the client contract without needing a deployed server.
-
-## Hotel dataset
-
-The original cleaned hotel workbook is now represented by four JSON files in `data/hotel-dataset/`. We kept the original values, converted Excel dates to readable ISO dates and included each source sheet once. The analysis workbook is a reference, not a second set of bookings.
-
-`services/hotel-dataset.ts` is the entry point for reading and summarising the records. Staff and managers can browse the imported history, and the manager dashboard calculates its figures from the records. The guest preview is linked to sample profile G0072 for previous reservations and recommendations. New bookings and live actions remain separate from the imported records.
-
-During backend integration, upload the workbook at the backend, agree on validation and reconciliation rules, and replace the dataset service with API calls. Keep the original statuses and source IDs; do not convert imported payments or bookings into verified transactions or active room allocations without validation. No real accounts or access credentials are created from this dataset.
-
-## Checking and deploying changes
-
-```bash
+npm run test:api
 npm run lint
 npm run build
 ```
 
-GitHub Actions runs the frontend checks and prepares a static GitHub Pages build. GitHub Pages hosts the frontend only; a live backend will need its own hosting. The normal Next.js development setup is kept separate from the static build. The Pages build uses the repository name to set the base path automatically.
+The GitHub Actions checks also run browser tests for the demo and the connected API screens. The connected browser checks use a local test fixture and are not a replacement for trying the deployed backend.
 
-Built with Next.js, React, TypeScript and Tailwind CSS.
+## Main project folders
 
+- `app/` - website pages.
+- `components/` - page sections and dashboard screens.
+- `services/` and `hooks/` - API calls and UI data handling.
+- `types/` and `lib/` - shared types and helpers.
+- `public/images/` - hotel pictures.
+- `tests/` - automated frontend tests.
+- `data/hotel-dataset/` - sample historical data used by the demo.
 
-## Live account integration
+## Before going live
 
-When `NEXT_PUBLIC_API_URL` is set to the deployed backend origin, Guestly uses backend registration, login, token-checked sessions, profile editing and super-admin team management. The browser demo accounts are hidden in live-API mode. JWTs are stored for the browser tab session, then checked against `GET /api/v1/auth/me` whenever the app loads. Logging out calls the backend revocation endpoint; role changes or account deactivation invalidate existing sessions.
-
-The backend super admin is created once by the backend developer using the dedicated CLI command, never through public guest registration. All guest, staff, manager and admin account permissions are verified by the backend. Leave `NEXT_PUBLIC_API_URL` unset for the existing standalone preview while other feature groups are being integrated.
-
-
-## Group 3: live hotel and rooms
-
-When NEXT_PUBLIC_API_URL is configured, the home hero uses GET /api/v1/hotels/current, while featured rooms, room discovery, room details and availability come from /api/v1/rooms and /api/v1/rooms/availability. The manager room screen sends new room types and room edits to the backend; photo uploads use the protected Cloudinary route with real multipart files. The manager can also update the single hotel profile.
-
-Run npm run seed in the backend once before trying its live room catalogue. The command creates the original six room types without overwriting rooms already managed in MongoDB. Until Group 4 supplies reservation creation and verified payments, live-API mode does not allow simulated checkout. When no backend URL is configured, the current standalone demo, local management state and simulated booking flow remain as before.
+- Check that the backend has a working database connection.
+- Test registration, login and each account role.
+- Make a test reservation and complete payment using Paystack's test mode.
+- Check that the booking updates only after verified payment.
+- Check document upload, staff review, room access display and service requests.
+- Confirm that historical reports stay separate from real guest records.
+- Test the site on mobile and desktop.
+- Keep the demo mode available until the hosted connection is ready.
