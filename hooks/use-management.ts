@@ -3,6 +3,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { initialManagementStore } from '@/data/mock';
 import { apiConfigured } from '@/services/api-client';
+import { useLiveCatalogue } from '@/hooks/use-services';
 import { readManagementStore, subscribeManagement } from '@/services/management-store';
 import {
   subscribeLiveRooms, roomCatalogueSnapshot, roomCatalogueServerSnapshot,
@@ -38,7 +39,8 @@ export function useHotelProfile(): { hotel: HotelProfile; error: string } {
 
 export function useManagement(): ManagementStore {
   const live = useRoomData();
+  const catalogue = useLiveCatalogue();
   const snapshot = useSyncExternalStore(subscribeManagement, managementSnapshot, managementServerSnapshot);
   const management = JSON.parse(snapshot) as ManagementStore;
-  return liveMode() ? { ...management, rooms: live.rooms } : management;
+  return liveMode() ? { ...management, rooms: live.rooms, services: catalogue.services } : management;
 }
