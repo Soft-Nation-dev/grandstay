@@ -126,13 +126,14 @@ export async function sendLiveMessage(account: Pick<Account, "id" | "role">, tex
     { method: "POST", body: { text: text.trim() } },
   );
   if (result.sender !== "guest" && result.sender !== "staff") throw new Error("Unexpected concierge sender.");
+  const sender: "guest" | "staff" = result.sender;
   if (identity === account.role + ":" + account.id && (state.selectedGuestId === target || account.role === "guest")) {
     setState({
       messages: [...state.messages, result],
       messageTotal: state.messageTotal + 1,
       conversations: state.conversations.map(item => item.guestId === target ? {
-        ...item, sender: result.sender, lastText: result.text,
-        updatedAt: result.createdAt, waiting: result.sender === "guest",
+        ...item, sender, lastText: result.text,
+        updatedAt: result.createdAt, waiting: sender === "guest",
       } : item),
     });
   }
