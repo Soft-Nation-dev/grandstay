@@ -1,6 +1,7 @@
 import { getSession } from "@/services/auth";
 import { apiConfigured } from "@/services/api-client";
 import { saveBackendRoom } from "@/services/backend-rooms";
+import { saveBackendService } from "@/services/backend-services";
 import { readBookingStore } from "@/services/booking-store";
 import { readManagementStore, writeManagementStore } from "@/services/management-store";
 import { reservations, roomImages } from "@/data/mock";
@@ -38,6 +39,7 @@ export async function saveRoom(input: Omit<Room, "id">, id?: string) {
 
 export function saveService(input: Omit<ServiceCategory, "id">, id?: string) {
   requireManager();
+  if (apiConfigured()) return saveBackendService(input, id);
   const store = readManagementStore();
   const name = input.name.trim();
   const description = input.description.trim();

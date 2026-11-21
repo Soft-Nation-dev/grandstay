@@ -22,6 +22,10 @@ export type ServiceRequest = {
   bookingId: string;
   guestId: string;
   category: string;
+  categoryId?: string;
+  guestName?: string;
+  roomName?: string;
+  createdAt?: string;
   details: string;
   status: RequestStatus;
   history: { status: RequestStatus; at: string }[];
@@ -29,6 +33,7 @@ export type ServiceRequest = {
 export type ConciergeMessage = {
   id: string;
   guestId: string;
+  guestName?: string;
   sender: "guest" | "staff" | "assistant";
   senderName: string;
   text: string;

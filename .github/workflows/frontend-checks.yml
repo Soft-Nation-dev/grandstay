@@ -44,3 +44,4 @@ jobs:
           node tests/live-auth-smoke.mjs
           node tests/live-bookings-smoke.mjs
           node tests/live-checkins-smoke.mjs
+          node tests/live-services-concierge-smoke.mjs
