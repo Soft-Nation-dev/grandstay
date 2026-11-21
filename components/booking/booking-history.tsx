@@ -38,9 +38,9 @@ function BookingCard({ booking, showGuest, staff = false }: { booking: Booking; 
     {booking.paymentReference && <p className="muted booking-reference">Payment reference: {booking.paymentReference}</p>}
     {booking.status === "pending" && live && !showGuest && <div className="experience-actions"><Link className="button button-primary" href={"/checkout?bookingId=" + encodeURIComponent(booking.id)}>Complete payment <Icon name="arrow" /></Link><button type="button" className="button button-soft" disabled={busy} onClick={() => void cancel()}>{busy ? "Cancelling…" : "Cancel hold"}</button></div>}
     {error && <p className="auth-error" role="alert">{error}</p>}
-    {staff && !live && booking.status === "confirmed" && <div className="staff-booking-status"><span>Digital check-in</span>{checkIn ? <Status status={checkIn.status} /> : <span className="upcoming-label">Not submitted</span>}</div>}
-    {staff && !live && booking.status === "confirmed" && checkIn && <Link className="button button-soft" href={`/staff/check-ins?booking=${encodeURIComponent(booking.id)}`}>Review check-in <Icon name="arrow" /></Link>}
-    {!showGuest && !live && booking.status === "confirmed" && <Link className="button button-soft" href={`/guest/check-in?booking=${encodeURIComponent(booking.id)}`}>View digital check-in <Icon name="arrow" /></Link>}
+    {staff && booking.status === "confirmed" && <div className="staff-booking-status"><span>Digital check-in</span>{checkIn ? <Status status={checkIn.status} /> : <span className="upcoming-label">Not submitted</span>}</div>}
+    {staff && booking.status === "confirmed" && checkIn && <Link className="button button-soft" href={`/staff/check-ins?booking=${encodeURIComponent(booking.id)}`}>Review check-in <Icon name="arrow" /></Link>}
+    {!showGuest && booking.status === "confirmed" && <Link className="button button-soft" href={`/guest/check-in?booking=${encodeURIComponent(booking.id)}`}>View digital check-in <Icon name="arrow" /></Link>}
   </article>;
 }
 

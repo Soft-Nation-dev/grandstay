@@ -1,4 +1,4 @@
-import { apiRequest, ApiError, type ApiRequestOptions } from '@/services/api-client';
+import { apiRequest, apiRequestBlob, ApiError, type ApiRequestOptions } from '@/services/api-client';
 import { normalizeApiUser, splitAccountName, type ApiUser } from '@/services/auth-contract';
 import type { Account, Credentials, Registration, TeamAccess, TeamRegistration } from '@/types/auth';
 
@@ -163,4 +163,21 @@ export async function backendUpdateProfile({ firstName, lastName, phone }: { fir
   });
   setAccount(normalizeApiUser(user));
   return account as Account;
+}
+
+
+export async function authorizedDownload(path: string) {
+  const currentToken = token();
+  if (!currentToken) throw new Error('Sign in to continue.');
+  try {
+    return await apiRequestBlob(path, { token: currentToken });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      generation += 1;
+      sessionStorage.removeItem(tokenKey);
+      team = [];
+      setAccount(null);
+    }
+    throw error;
+  }
 }

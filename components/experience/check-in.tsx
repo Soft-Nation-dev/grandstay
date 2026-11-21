@@ -12,6 +12,8 @@ import { Icon } from "@/components/ui/icon";
 import { BookingPicker, EmptyExperience, ExperienceHeading, Status, formatMoment } from "@/components/experience/shared";
 import type { Booking } from "@/types/booking";
 import type { CheckIn, DocumentKind } from "@/types/experience";
+import { apiConfigured } from "@/services/api-client";
+import { LiveGuestCheckIn, LiveStaffCheckIns } from "@/components/experience/live-checkin";
 
 function CheckInForm({ booking, current }: { booking: Booking; current?: CheckIn }) {
   const [sample, setSample] = useState(false);
@@ -38,7 +40,7 @@ function CheckInForm({ booking, current }: { booking: Booking; current?: CheckIn
   </form>;
 }
 
-export function GuestCheckIn() {
+function DemoGuestCheckIn() {
   const account = useAuth();
   const { bookings } = useBookingStore();
   const { checkIns } = useExperience();
@@ -70,7 +72,7 @@ function ReviewCard({ item, booking }: { item: CheckIn; booking?: Booking }) {
   </article>;
 }
 
-export function StaffCheckIns() {
+function DemoStaffCheckIns() {
   const { bookings } = useBookingStore();
   const { checkIns } = useExperience();
   const params = useSearchParams();
@@ -79,4 +81,13 @@ export function StaffCheckIns() {
   const pending = checkIns.filter(item => item.status === "pending" && bookings.some(booking => booking.id === item.bookingId && booking.checkOut > hotelDate()));
   const sorted = checkIns.filter(item => (!focus || item.bookingId === focus) && (filter === "all" || (filter === "pending" ? pending.some(value => value.bookingId === item.bookingId) : item.status === filter))).sort((a, b) => Number(b.status === "pending") - Number(a.status === "pending") || b.submittedAt.localeCompare(a.submittedAt));
   return <section className="workspace-section"><ExperienceHeading role="staff" title="Check-in queue" description="Review identification submissions and approve or reject guest check-ins." /><div className="filter-tabs" aria-label="Check-in filters">{["all", "pending", "approved", "rejected"].map(item => <Link className={!focus && filter === item ? "filter-active" : ""} aria-current={!focus && filter === item ? "true" : undefined} key={item} href={item === "all" ? "/staff/check-ins" : `/staff/check-ins?view=${item}`}>{item === "all" ? "All" : item[0].toUpperCase() + item.slice(1)}</Link>)}</div>{focus && <Link href="/staff/check-ins" className="text-link">Clear selected booking</Link>}<p className="muted">{pending.length} awaiting review</p>{sorted.length ? <div className="workspace-grid">{sorted.map(item => <ReviewCard key={item.bookingId} item={item} booking={bookings.find(booking => booking.id === item.bookingId)} />)}</div> : <EmptyExperience title="No matching submissions" description="Change the filter or wait for a guest check-in." />}</section>;
+}
+
+
+export function GuestCheckIn() {
+  return apiConfigured() ? <LiveGuestCheckIn /> : <DemoGuestCheckIn />;
+}
+
+export function StaffCheckIns() {
+  return apiConfigured() ? <LiveStaffCheckIns /> : <DemoStaffCheckIns />;
 }

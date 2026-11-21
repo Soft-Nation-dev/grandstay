@@ -8,8 +8,10 @@ import { useExperience } from "@/hooks/use-experience";
 import { roomAccess } from "@/services/experience";
 import { EmptyExperience, ExperienceHeading, formatMoment } from "@/components/experience/shared";
 import { Icon } from "@/components/ui/icon";
+import { apiConfigured } from "@/services/api-client";
+import { LiveRoomAccess } from "@/components/experience/live-room-access";
 
-export function RoomAccess() {
+function DemoRoomAccess() {
   const account = useAuth();
   const { bookings } = useBookingStore();
   const { checkIns } = useExperience();
@@ -27,4 +29,9 @@ export function RoomAccess() {
       return <article className="panel access-card" key={booking.id}><span className="feature-icon"><Icon name="key" width={28} height={28} /></span><span className="eyebrow">{booking.id}</span><h3>{booking.roomName}</h3>{access && <><p className="access-code" aria-label="Temporary room access code">{access.code ?? "— — —"}</p><span className="role-pill">{access.status === "active" ? "Active" : access.status === "scheduled" ? "Scheduled" : access.status === "expired" ? "Expired" : "Unavailable"}</span><p className="muted">Valid from {formatMoment(access.validFrom)} until {formatMoment(access.expiresAt)} (WAT)</p></>}</article>;
     })}</div>}
   </section>;
+}
+
+
+export function RoomAccess() {
+  return apiConfigured() ? <LiveRoomAccess /> : <DemoRoomAccess />;
 }

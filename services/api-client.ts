@@ -77,3 +77,31 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
 export function getApiHealth(options: Pick<ApiRequestOptions, "baseUrl" | "signal"> = {}) {
   return apiRequest<ApiHealth>("/health", options);
 }
+
+
+export async function apiRequestBlob(path: string, options: Pick<ApiRequestOptions, "token" | "baseUrl"> = {}) {
+  if (!path.startsWith("/") || path.startsWith("//")) throw new ApiError("The API path must be relative to the backend origin.");
+  const origin = apiBaseUrl(options.baseUrl);
+  const headers = new Headers({ Accept: "image/jpeg,image/png,image/webp" });
+  if (options.token) headers.set("Authorization", "Bearer " + options.token);
+  let response: Response;
+  try {
+    response = await fetch(origin + path, { credentials: "omit", cache: "no-store", headers });
+  } catch {
+    throw new ApiError("Unable to retrieve the identity document.");
+  }
+  if (!response.ok) {
+    let message = "Identity document not available.";
+    try {
+      const result = await response.json();
+      if (typeof result.message === "string") message = result.message;
+    } catch {}
+    throw new ApiError(message, response.status);
+  }
+  const kind = response.headers.get("content-type")?.split(";")[0]?.trim();
+  if (!kind || !["image/jpeg", "image/png", "image/webp"].includes(kind)) {
+    throw new ApiError("The backend returned an unexpected identity document format.");
+  }
+  const extension = kind === "image/png" ? "png" : kind === "image/jpeg" ? "jpg" : "webp";
+  return { blob: await response.blob(), filename: "guestly-identity-document." + extension };
+}
