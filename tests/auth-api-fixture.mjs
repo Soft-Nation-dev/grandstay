@@ -1,5 +1,6 @@
 import http from 'node:http';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 
 const users = new Map();
 const sessions = new Map();
@@ -20,6 +21,12 @@ const serviceCatalogue = [
   ['Restaurant','Hotel dining requests.'],
 ].map(([name,description],index) => ({ id: '507f1f77bcf86cd7994390' + String(index + 10), name, description, active: true }));
 const checkins = [];
+const historicalFiles = ['bookings', 'guests', 'payments', 'service-requests'];
+const historicalData = Object.fromEntries(historicalFiles.map(source => [
+  source, JSON.parse(readFileSync(new URL('../data/hotel-dataset/' + source + '.json', import.meta.url), 'utf8')),
+]));
+const loyaltyRules = [{ pointsPerNight: 10, effectiveAt: '1970-01-01T00:00:00.000Z' }];
+const loyaltyAwards = [];
 let simulatedNow = null;
 
 function pageItems(items, url) {
@@ -47,6 +54,84 @@ function hotelToday() {
   }).formatToParts(new Date());
   const value = name => pieces.find(part => part.type === name).value;
   return value('year') + '-' + value('month') + '-' + value('day');
+}
+
+function historicalReport() {
+  const b = historicalData.bookings, g = historicalData.guests, p = historicalData.payments, r = historicalData['service-requests'];
+  const profiles = new Map();
+  for (const entry of g) {
+    const set = profiles.get(entry.Guest_ID) || new Set();
+    set.add(JSON.stringify(entry));
+    profiles.set(entry.Guest_ID, set);
+  }
+  const successful = p.filter(entry => entry.Payment_Status === 'Successful');
+  const average = values => values.length ? values.reduce((sum, x) => sum + x, 0) / values.length : 0;
+  const statuses = (items, field, names) => names.map(name => ({ name, count: items.filter(entry => entry[field] === name).length }));
+  const months = [...new Set(p.map(entry => entry.Booking_Date.slice(0, 7)))].sort().map(month => {
+    const rows = successful.filter(entry => entry.Booking_Date.startsWith(month));
+    return { month, revenue: rows.reduce((sum, entry) => sum + entry.Total_Revenue_NGN, 0), count: rows.length };
+  });
+  const rooms = [...new Set(b.map(entry => entry.Room_Type))].sort().map(name => {
+    const rows = b.filter(entry => entry.Room_Type === name);
+    return { name, count: rows.length, averageRate: Math.round(average(rows.map(entry => entry.Nightly_Rate_NGN))) };
+  });
+  const services = [...new Set(r.map(entry => entry.Service_Request_Type))].sort().map(name => {
+    const rows = r.filter(entry => entry.Service_Request_Type === name);
+    return {
+      name, count: rows.length, response: average(rows.map(entry => entry.Service_Response_Time_Min)),
+      resolution: average(rows.map(entry => entry.Service_Resolution_Time_Min)),
+      satisfaction: average(rows.map(entry => entry.Guest_Satisfaction_1_5)),
+    };
+  });
+  const dates = b.map(entry => entry.Booking_Date).sort();
+  return {
+    imported: true, source: 'historical-data-analyst',
+    counts: { bookings: b.length, guests: g.length, payments: p.length, requests: r.length },
+    distinctGuestIds: profiles.size,
+    conflictingGuestIds: [...profiles.values()].filter(values => values.size > 1).length,
+    completed: b.filter(entry => entry.Booking_Status === 'Completed').length,
+    successfulPayments: successful.length,
+    historicalSuccessfulRevenueNGN: successful.reduce((sum, entry) => sum + entry.Total_Revenue_NGN, 0),
+    verifiedGatewayPayments: 0, eligibleLoyaltyAwards: 0,
+    returningBookings: b.filter(entry => entry.Returning_Guest === 'Yes').length,
+    satisfaction: average(r.map(entry => entry.Guest_Satisfaction_1_5)),
+    response: average(r.map(entry => entry.Service_Response_Time_Min)),
+    resolution: average(r.map(entry => entry.Service_Resolution_Time_Min)),
+    bookingOutcomes: statuses(b, 'Booking_Status', ['Completed', 'Cancelled', 'Abandoned']),
+    paymentOutcomes: statuses(p, 'Payment_Status', ['Successful', 'Failed', 'Pending', 'Refunded']),
+    months, rooms, services, from: dates[0], to: dates.at(-1),
+  };
+}
+
+function reconcileAwards() {
+  let created = 0;
+  for (const booking of bookings) {
+    const checkout = new Date(booking.checkOut + 'T12:00:00+01:00');
+    if (booking.status !== 'confirmed' || checkout > (simulatedNow || new Date())) continue;
+    const checkin = checkins.find(item => item.bookingId === booking.id && item.status === 'approved');
+    const payment = payments.find(item => item.bookingId === booking.id && item.status === 'success' && item.guestId === booking.guestId && item.amount === booking.amount * 100);
+    if (!checkin || !payment || loyaltyAwards.some(item => item.bookingId === booking.id)) continue;
+    const rule = [...loyaltyRules].filter(item => new Date(item.effectiveAt) <= checkout).at(-1);
+    if (!rule) continue;
+    const nights = Math.round((Date.parse(booking.checkOut) - Date.parse(booking.checkIn)) / 86400000);
+    loyaltyAwards.push({
+      id: randomUUID().replaceAll('-', '').slice(0, 24),
+      guestId: booking.guestId, bookingId: booking.id, roomName: booking.roomName,
+      checkoutDate: booking.checkOut, nights, pointsPerNight: rule.pointsPerNight,
+      points: nights * rule.pointsPerNight, awardedAt: (simulatedNow || new Date()).toISOString(), revokedAt: null,
+    });
+    created++;
+  }
+  return { created, revoked: 0, guestsChecked: new Set(bookings.map(item => item.guestId)).size };
+}
+
+function loyaltySummary(url, guestId) {
+  const entries = loyaltyAwards.filter(item => !guestId || item.guestId === guestId);
+  return {
+    source: 'live-verified-stays', points: entries.filter(item => !item.revokedAt).reduce((sum, item) => sum + item.points, 0),
+    ...pageItems(entries, url), awards: pageItems(entries, url).items,
+    rules: [loyaltyRules.at(-1)],
+  };
 }
 
 function publicMessage(item) {
@@ -555,6 +640,87 @@ const server = http.createServer(async (req, res) => {
       };
       conciergeMessages.unshift(entry);
       return json(res, 201, true, 'Reply sent', publicMessage(entry));
+    }
+    if (url.pathname === '/api/v1/reports/overview' && req.method === 'GET') {
+      if (active.user.role !== 'manager') return json(res, 403, false, 'Access denied');
+      const verified = payments.filter(item => item.status === 'success');
+      const earned = verified.reduce((sum, item) => sum + item.amount, 0);
+      const live = {
+        source: 'live-verified',
+        confirmedBookings: bookings.filter(item => item.status === 'confirmed').length,
+        allBookings: bookings.length, paymentCount: payments.length, verifiedPayments: verified.length,
+        verifiedRevenueKobo: earned, verifiedRevenueNGN: earned / 100,
+        serviceRequests: serviceRequests.length,
+        completedServiceRequests: serviceRequests.filter(item => item.status === 'done').length,
+        serviceCompletionPercent: serviceRequests.length ? Math.round(serviceRequests.filter(item => item.status === 'done').length / serviceRequests.length * 100) : null,
+        roomInventory: rooms.reduce((sum, item) => sum + item.inventory, 0),
+        loyaltyPointsAwarded: loyaltyAwards.filter(item => !item.revokedAt).reduce((sum, item) => sum + item.points, 0),
+      };
+      return json(res, 200, true, 'Source-separated performance', { historical: historicalReport(), live });
+    }
+    const recordsMatch = url.pathname.match(/^\/api\/v1\/reports\/historical\/([a-z-]+)$/);
+    if (recordsMatch && req.method === 'GET') {
+      if (active.user.role !== 'manager') return json(res, 403, false, 'Access denied');
+      const source = recordsMatch[1];
+      if (!historicalFiles.includes(source)) return json(res, 400, false, 'Unknown historical source');
+      const sourceIdKey = { bookings: 'Booking_ID', guests: 'Guest_ID', payments: 'Payment_ID', 'service-requests': 'Request_ID' }[source];
+      const statusKey = { bookings: 'Booking_Status', payments: 'Payment_Status' }[source];
+      const q = url.searchParams.get('q')?.toLowerCase() || '';
+      const status = url.searchParams.get('status') || '';
+      const rows = historicalData[source].map((item, index) => ({ ...item, sourceId: item[sourceIdKey], sourceRow: index + 1 }))
+        .filter(item => (!q || String(item[sourceIdKey]).toLowerCase().includes(q)) && (!status || !statusKey || item[statusKey] === status));
+      return json(res, 200, true, 'Historical rows retrieved', { source, ...pageItems(rows, url) });
+    }
+    if (url.pathname === '/api/v1/loyalty/me' && req.method === 'GET') {
+      if (active.user.role !== 'guest') return json(res, 403, false, 'Access denied');
+      reconcileAwards();
+      return json(res, 200, true, 'Verified guest loyalty', loyaltySummary(url, active.user.id));
+    }
+    if (url.pathname === '/api/v1/loyalty/manager' && req.method === 'GET') {
+      if (active.user.role !== 'manager') return json(res, 403, false, 'Access denied');
+      return json(res, 200, true, 'Loyalty manager overview', loyaltySummary(url));
+    }
+    if (url.pathname === '/api/v1/loyalty/rules' && req.method === 'GET') {
+      if (active.user.role !== 'manager') return json(res, 403, false, 'Access denied');
+      return json(res, 200, true, 'Loyalty rules', loyaltyRules);
+    }
+    if (url.pathname === '/api/v1/loyalty/rules' && req.method === 'POST') {
+      if (active.user.role !== 'manager') return json(res, 403, false, 'Access denied');
+      const data = await requestBody(req);
+      if (!Number.isInteger(data.pointsPerNight) || data.pointsPerNight < 0 || data.pointsPerNight > 10000) return json(res, 400, false, 'Invalid earning rate');
+      const rule = { pointsPerNight: data.pointsPerNight, effectiveAt: new Date().toISOString() };
+      loyaltyRules.push(rule);
+      return json(res, 201, true, 'Loyalty rule saved', rule);
+    }
+    if (url.pathname === '/api/v1/loyalty/reconcile' && req.method === 'POST') {
+      if (active.user.role !== 'manager') return json(res, 403, false, 'Access denied');
+      return json(res, 200, true, 'Reconciliation complete', reconcileAwards());
+    }
+    if (url.pathname === '/api/v1/recommendations/me' && req.method === 'GET') {
+      if (active.user.role !== 'guest') return json(res, 403, false, 'Access denied');
+      const limit = Number(url.searchParams.get('limit') || 3);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 6) return json(res, 400, false, 'Invalid limit');
+      const history = bookings.filter(item => item.guestId === active.user.id && item.status === 'confirmed' &&
+        payments.some(payment => payment.bookingId === item.id && payment.status === 'success'));
+      const preferred = new Map();
+      for (const booking of history) {
+        const room = rooms.find(item => item.id === booking.roomId);
+        if (room) preferred.set(room.category, (preferred.get(room.category) || 0) + 1);
+      }
+      const popularity = new Map();
+      for (const row of historicalData.bookings.filter(item => item.Booking_Status === 'Completed')) popularity.set(row.Room_Type, (popularity.get(row.Room_Type) || 0) + 1);
+      const max = Math.max(1, ...popularity.values());
+      const suggestions = rooms.filter(item => item.inventory > 0).map(room => {
+        const personalized = preferred.get(room.category) || 0;
+        const historical = popularity.get(room.category) || 0;
+        return {
+          room, score: personalized * 12 + Math.round(historical / max * 3) + (room.featured ? 2 : 0),
+          reason: personalized ? 'Similar to your verified reservations' : historical ? 'Popular room category in historical hotel records' : room.featured ? 'Featured by the hotel' : 'Explore this room type',
+          source: personalized ? 'verified-guest-stays' : historical ? 'historical-aggregate' : 'hotel-catalogue',
+          availabilityConfirmed: false,
+        };
+      }).sort((a, b) => b.score - a.score || a.room.nightlyRate - b.room.nightlyRate).slice(0, limit);
+      return json(res, 200, true, 'Room suggestions', suggestions);
     }
     if (active.user.role !== 'admin') return json(res, 403, false, 'Access denied');
     if (url.pathname === '/api/v1/users/team' && req.method === 'GET') {
