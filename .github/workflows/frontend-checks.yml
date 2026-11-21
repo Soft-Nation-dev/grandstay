@@ -33,3 +33,12 @@ jobs:
             sleep 1
           done
           node tests/frontend-smoke.mjs
+      - name: Run API-backed authentication browser checks
+        run: |
+          node tests/auth-api-fixture.mjs > /tmp/guestly-auth-fixture.log 2>&1 &
+          NEXT_PUBLIC_API_URL=http://127.0.0.1:4100 npm run dev -- --hostname 127.0.0.1 --port 3100 > /tmp/guestly-auth-app.log 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:3100/login > /dev/null; then break; fi
+            sleep 1
+          done
+          node tests/live-auth-smoke.mjs
